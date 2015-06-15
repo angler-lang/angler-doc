@@ -53,6 +53,10 @@ Definir un *alias* para un tipo que se escriba mucho, o para darle mayor signifi
         String = List Char
 
 
+### λ-tipos
+
+???
+
 ### Otras cosas de tipos...
 
 ### Ejemplos de tipos
