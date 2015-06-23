@@ -71,15 +71,15 @@ Definir un *alias* para un tipo que se escriba mucho, o para darle mayor signifi
 
     -- And / Tuples
     _/\_ : (with a:Type) -> (with b:Type) -> Type where
-        (_,_) : a -> b -> <a,b>
+        (_,_) : a -> b -> a /\ b
 
     -- Should this type be in the standard?
     _\/_ : (with a:Type) -> (with b:Type) -> Type where
-        _<|   : a -> a|b
-        |>_   : b -> a|b
-        _<|>_ : a -> b -> a|b
+        _<|   : a -> a \/ b
+        |>_   : b -> a \/ b
+        _<|>_ : a -> b -> a \/ b
 
-    -- Different
+    -- XOR
     _=/=_ : (with a:Type) -> (with b:Type) -> Type where
         _</= : a -> a =/= b
         =/>_ : b -> a =/= b
