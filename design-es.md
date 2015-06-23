@@ -18,7 +18,7 @@ Comentarios como en Haskell.
 
 El tipo `Type` viene embebido en el lenguaje, probablemente.
 
-#### Tipos cerrados 
+#### Tipos cerrados
 
 Los *tipos cerrados* usan la palabra reservada `where` para indicar con indentación sus constructores.
 
@@ -41,7 +41,7 @@ Los *tipos abiertos* no utilizan la palabra reservada `where`, sino que se van e
 
 Tipos que dependen de otros valores para ser construídos.
 
-    List : (with a : Type) -> Type where
+    List : (with a:Type) -> Type where
         Nil  : List a
         _::_ : a -> List a -> List a
 
@@ -69,15 +69,46 @@ Definir un *alias* para un tipo que se escriba mucho, o para darle mayor signifi
         Z : Nat
         S : Nat -> Nat
 
-    List : (with a : Type) -> Type where
+    -- And / Tuples
+    _/\_ : (with a:Type) -> (with b:Type) -> Type where
+        (_,_) : a -> b -> <a,b>
+
+    -- Should this type be in the standard?
+    _\/_ : (with a:Type) -> (with b:Type) -> Type where
+        _<|   : a -> a|b
+        |>_   : b -> a|b
+        _<|>_ : a -> b -> a|b
+
+    -- Different
+    _=/=_ : (with a:Type) -> (with b:Type) -> Type where
+        _</= : a -> a =/= b
+        =/>_ : b -> a =/= b
+    Either : (with a:Type) -> (with b:Type) -> Type where
+        Left  : a -> Either a b
+        Right : b -> Either a b
+    _|_ : (with a:Type) -> (with b:Type) -> Type where
+        _<| : a -> a|b
+        |>_ : b -> a|b
+
+    Maybe : (with a:Type) -> Type where
+        Nothing : Maybe a
+        Just    : a -> Maybe a
+    Maybe' : Type -> Type where
+        Nothing : forall (a:Type) . Maybe' a
+        Just    : forall (a:Type) . a -> Maybe' a
+
+    List : (with a:Type) -> Type where
         Nil  : List a
         _::_ : a -> List a -> List a
+    List' : Type -> Type where
+        Nil  : forall (a:Type) . List' a
+        _::_ : forall (a:Type) . a -> List' a -> List' a
 
-    Tree : (with a : Type) -> Type where
+    Tree : (with a:Type) -> Type where
         Leaf   : a -> Tree a
         Branch : Tree a -> Tree a -> Tree a
 
-    Vect : Nat -> (with a : Type) -> Type where
+    Vect : Nat -> (with a:Type) -> Type where
         Nil  : Vect Z a
         _::_ : a -> Vect n a -> Vect (S n) a
 
@@ -188,7 +219,7 @@ Ejemplo:
 Esa llamada da igual a `S Z`.
 
 #### Pasando argumentos implícitos
-    
+
 Se puede instanciar directamente los argumentos implícitos usando llaves (`{`, `}`). Probablemente únicamente del `forall`.
 
     <identificador> [{ <implícito> = <expresión>[, <implícito> = <expresión> ]}] [<expresión> [<expresión>..]]
@@ -227,7 +258,7 @@ Esa llamada da igual a `S Z`.
     map f (x::xs) = f x :: map f xs
 
     map (\x => x * 2) [1,2,3]           : List Nat -- azúcar sintáctica
-    map (\x => x * 2) (1::2::3::Nil)    : List Nat -- desazúcar a esto
+    map (\x => x * 2) (1::2::3::Nil)    : List Nat -- desazucarea a esto
 
     map {a = Nat}                       : forall b:Type . (Nat -> b) -> List Nat -> List b
 
@@ -248,7 +279,7 @@ Son el equivalente a *clases* de Haskell. La sintaxis es
         [ <definición función> ..] ]
 
 Por ejemplo:
-    
+
     Eq on t : Type where
         _==_ : t -> t -> Bool
         _/=_ : t -> t -> Bool
@@ -319,7 +350,7 @@ Por ejemplo:
 
 #### ¿Alcances? cerrados
 
-    behavespace <alcance> where 
+    behavespace <alcance> where
 
         <identificador de tipo> is <comportamiento> where
             <definición función>
