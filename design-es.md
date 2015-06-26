@@ -110,7 +110,7 @@ Definir un *alias* para un tipo que se escriba mucho, o para darle mayor signifi
 
     Vect : Nat -> (with a:Type) -> Type where
         Nil  : Vect Z a
-        _::_ : a -> Vect n a -> Vect (S n) a
+        _::_ : forall n:Nat . a -> Vect n a -> Vect (S n) a
 
 ## Funciones
 
