@@ -12,106 +12,6 @@ Comentarios como en Haskell.
         Así son de varias líneas.
      -}
 
-## Sistema de tipos
-
-### Declaración de tipos
-
-El tipo `Type` viene embebido en el lenguaje, probablemente.
-
-#### Tipos cerrados
-
-Los *tipos cerrados* usan la palabra reservada `where` para indicar con indentación sus constructores.
-
-    Bool : Type where
-        True : Bool
-        False : Bool
-
-#### Tipos abiertos
-
-Los *tipos abiertos* no utilizan la palabra reservada `where`, sino que se van escribiendo constructores cuando se vayan necesitando.
-
-    Currency : Type
-
-    USD : Nat -> Currency
-    EUR : Nat -> Currency
-    VEF : Nat -> Currency
-    -- ...
-
-#### Tipos dependientes
-
-Tipos que dependen de otros valores para ser construídos.
-
-    List : (with a:Type) -> Type where
-        Nil  : List a
-        _::_ : a -> List a -> List a
-
-#### Aliases
-
-Definir un *alias* para un tipo que se escriba mucho, o para darle mayor significado a lo que estamos haciendo.
-
-    String : Type where
-        String = List Char
-
-
-### λ-tipos
-
-???
-
-### Otras cosas de tipos...
-
-### Ejemplos de tipos
-
-    Bool : Type where
-        True : Bool
-        False : Bool
-
-    Nat : Type where
-        Z : Nat
-        S : Nat -> Nat
-
-    -- And / Tuples
-    _/\_ : (with a:Type) -> (with b:Type) -> Type where
-        (_,_) : a -> b -> a /\ b
-
-    -- Should this type be in the standard?
-    _\/_ : (with a:Type) -> (with b:Type) -> Type where
-        _<|   : a -> a \/ b
-        |>_   : b -> a \/ b
-        _<|>_ : a -> b -> a \/ b
-
-    -- XOR
-    _=/=_ : (with a:Type) -> (with b:Type) -> Type where
-        _</= : a -> a =/= b
-        =/>_ : b -> a =/= b
-    Either : (with a:Type) -> (with b:Type) -> Type where
-        Left  : a -> Either a b
-        Right : b -> Either a b
-    _|_ : (with a:Type) -> (with b:Type) -> Type where
-        _<| : a -> a|b
-        |>_ : b -> a|b
-
-    Maybe : (with a:Type) -> Type where
-        Nothing : Maybe a
-        Just    : a -> Maybe a
-    Maybe' : Type -> Type where
-        Nothing : forall (a:Type) . Maybe' a
-        Just    : forall (a:Type) . a -> Maybe' a
-
-    List : (with a:Type) -> Type where
-        Nil  : List a
-        _::_ : a -> List a -> List a
-    List' : Type -> Type where
-        Nil  : forall (a:Type) . List' a
-        _::_ : forall (a:Type) . a -> List' a -> List' a
-
-    Tree : (with a:Type) -> Type where
-        Leaf   : a -> Tree a
-        Branch : Tree a -> Tree a -> Tree a
-
-    Vect : Nat -> (with a:Type) -> Type where
-        Nil  : Vect Z a
-        _::_ : forall n:Nat . a -> Vect n a -> Vect (S n) a
-
 ## Funciones
 
 El operador `:` viene embebido en el lenguaje, si se considera un operador. ¿Y el operador `->`?.
@@ -264,6 +164,107 @@ Esa llamada da igual a `S Z`.
 
     map {a = Nat, b = Bool}             : (Nat -> Bool) -> List Nat -> List Bool
     map (const True)                    : forall a:Type . List a -> List Bool
+
+
+## Sistema de tipos
+
+### Declaración de tipos
+
+El tipo `Type` viene embebido en el lenguaje, probablemente.
+
+#### Tipos cerrados
+
+Los *tipos cerrados* usan la palabra reservada `where` para indicar con indentación sus constructores.
+
+    Bool : Type where
+        True : Bool
+        False : Bool
+
+#### Tipos abiertos
+
+Los *tipos abiertos* no utilizan la palabra reservada `where`, sino que se van escribiendo constructores cuando se vayan necesitando.
+
+    Currency : Type
+
+    USD : Nat -> Currency
+    EUR : Nat -> Currency
+    VEF : Nat -> Currency
+    -- ...
+
+#### Tipos dependientes
+
+Tipos que dependen de otros valores para ser construídos.
+
+    List : (with a:Type) -> Type where
+        Nil  : List a
+        _::_ : a -> List a -> List a
+
+#### Aliases
+
+Definir un *alias* para un tipo que se escriba mucho, o para darle mayor significado a lo que estamos haciendo.
+
+    String : Type where
+        String = List Char
+
+
+### λ-tipos
+
+???
+
+### Otras cosas de tipos...
+
+### Ejemplos de tipos
+
+    Bool : Type where
+        True : Bool
+        False : Bool
+
+    Nat : Type where
+        Z : Nat
+        S : Nat -> Nat
+
+    -- And / Tuples
+    _/\_ : (with a:Type) -> (with b:Type) -> Type where
+        (_,_) : a -> b -> a /\ b
+
+    -- Should this type be in the standard?
+    _\/_ : (with a:Type) -> (with b:Type) -> Type where
+        _<|   : a -> a \/ b
+        |>_   : b -> a \/ b
+        _<|>_ : a -> b -> a \/ b
+
+    -- XOR
+    _=/=_ : (with a:Type) -> (with b:Type) -> Type where
+        _</= : a -> a =/= b
+        =/>_ : b -> a =/= b
+    Either : (with a:Type) -> (with b:Type) -> Type where
+        Left  : a -> Either a b
+        Right : b -> Either a b
+    _|_ : (with a:Type) -> (with b:Type) -> Type where
+        _<| : a -> a|b
+        |>_ : b -> a|b
+
+    Maybe : (with a:Type) -> Type where
+        Nothing : Maybe a
+        Just    : a -> Maybe a
+    Maybe' : Type -> Type where
+        Nothing : forall (a:Type) . Maybe' a
+        Just    : forall (a:Type) . a -> Maybe' a
+
+    List : (with a:Type) -> Type where
+        Nil  : List a
+        _::_ : a -> List a -> List a
+    List' : Type -> Type where
+        Nil  : forall (a:Type) . List' a
+        _::_ : forall (a:Type) . a -> List' a -> List' a
+
+    Tree : (with a:Type) -> Type where
+        Leaf   : a -> Tree a
+        Branch : Tree a -> Tree a -> Tree a
+
+    Vect : Nat -> (with a:Type) -> Type where
+        Nil  : Vect Z a
+        _::_ : forall n:Nat . a -> Vect n a -> Vect (S n) a
 
 ## Comportamientos
 
