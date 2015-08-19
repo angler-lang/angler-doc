@@ -398,3 +398,38 @@ Por ejemplo:
         Z     == Z     = True
         (S n) == (S m) = n == m
         ?     == ?     = False
+
+## Modo de pruebas
+
+***TODO***
+
+## Azúcar Sintáctica
+
+Hay ciertas partes de la sintaxis del lenguaje que podríamos facilitar para la escritura, esto es llamado *azúcar sintáctica* (syntactic sugar).
+
+Aquí se listaran **posibles** casos de azúcar sintáctica.
+
+### Listas
+
+La versión *azucarada* de listas sería `[0, 1, 2]`, para ser *desazucarado* a `0 :: 1 :: 2 :: Nil`.
+
+### Cadenas de caracteres
+
+La versión *azucarada* de cadenas de caracteres (`String`) sería `"Text\n"`, para ser *desazucarado* a `'T' :: 'e' :: 'x' :: 't' :: '\n' :: Nil`.
+
+### Notación `do`
+
+La notación `do` se usa para *monads*:
+
+    do 
+        x <- action0
+        action2 x
+        z <- action3
+        action4 z
+
+Se convierte en:
+
+    action0 >>= \x => 
+        action2 x >> 
+            action3 >>= \z => 
+                action4 z  
