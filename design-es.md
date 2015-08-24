@@ -2,6 +2,29 @@
 
 Angler es un lenguaje de programación funcional con un sistema de tipos dependientes orientado a la enseñanza de las matemáticas discretas.
 
+## Módulo
+
+Un módulo es el programa dentro de **un** archivo de Angler. Puede incluir una sección de *exportación*, y también de *importación*, ambas opcionales.
+
+Las *importaciones* pueden ser *cualificadas*, es decir, agregando a su identificador un prefijo.
+
+    [ export <identificador> [ , <identificador> ..] ]
+
+    [ import <identificador>  [ as <identificador> ] [ ( [identificador [ , <identificador> ..] ] ) ] ]
+
+Por ejemplo (ya que esta definición de sintaxis es como confusa):
+
+    export IntMap, member, lookup, insert, update, keys, elems
+
+    import List  as L (lookup, foldr)
+    import Maybe      (Maybe, Just, Nothing)
+    import Monad as Monad
+    import Show
+
+    IntMap : forall a:Type . a -> Type
+
+    lookup : forall a:Type . Int -> IntMap a -> Maybe a
+
 ## Comentarios
 
 Comentarios como en Haskell.
@@ -22,9 +45,9 @@ Declarar una función es declarar un tipo, pero usar un identificador en letra m
 
     <identificador> : <tipo>
 
-Definir una función es explicar el comportamiento de esta por los argumentos *recibidos*, se usa la sintáxis:
+Definir una función es explicar el comportamiento de esta por los argumentos *recibidos*, se usa la sintaxis:
 
-    <identificador> [<argumento> [<argumento>..]] = <expresión>
+    <identificador> [ <argumento> [ <argumento> ..] ] = <expresión>
 
 #### Funciones abiertas
 
@@ -40,16 +63,16 @@ Las *funciones abiertas* van de la mano con los *tipos abiertos*, se pueden defi
 Las *funciones cerradas* usan la palabra reservada `where` para indicar con indentación sus casos a considerar.
 
     isUSD : Currency -> Bool where
-        isUSD (USD ?) = True
-        isUSD ?       = False
+        isUSD (USD n) = True
+        isUSD other   = False
 
 #### *Don't care*
 
-Cuando no nos interesa usar un valor, en vez de darle un nombre poco significativo para hacerle referencia, le colocamos `?`, indicando que no haremos referencia a él más adelante.
+Cuando no nos interesa usar un valor, en vez de darle un nombre poco significativo para hacerle referencia, le colocamos `_`, indicando que no haremos referencia a él más adelante.
 
     isUSD : Currency -> Bool where
-        isUSD (USD ?) = True
-        isUSD ?       = False
+        isUSD (USD _) = True
+        isUSD _       = False
 
 #### λ-funciones
 
@@ -61,7 +84,7 @@ Funciones que no tienen un identificador.
 
 ### Operadores
 
-Tienen una sintáxis especial para lograr una declaración intuitiva. Se usa el caracter *piso* (`_`) para indicar dónde van los argumentos.
+Tienen una sintaxis especial para lograr una declaración intuitiva. Se usa el caracter *piso* (`_`) para indicar dónde van los argumentos.
 
     _+_ : Nat -> Nat -> Nat
     n + Z     = n
@@ -69,8 +92,8 @@ Tienen una sintáxis especial para lograr una declaración intuitiva. Se usa el 
 
     -- if-then-else definido en el lenguaje, 😱
     if_then_else_ : forall t:Type . Bool -> t -> t -> t
-    if True  then happens else ?       = happens
-    if False then ?       else happens = happens
+    if True  then happens else _       = happens
+    if False then _       else happens = happens
 
 ### Parámetros implícitos
 
@@ -80,7 +103,7 @@ Si la función tiene *polimorfismo de tipos*, se deben indicar con parámetros i
 
 Para indicar un parámetro implícito que aplica para cualquier elemento de ese tipo.
 
-    forall <identificador> : <tipo> [, <identificador> : <tipo>...] .
+    forall <identificador> : <tipo> [ , <identificador> : <tipo> ..] .
 
 Ejemplo:
 
@@ -91,12 +114,12 @@ Ejemplo:
 
 Para indicar un parámetro implícito que aplica para *algún* elemento de ese tipo.
 
-    exists <identificador> : <tipo> [, <identificador> : <tipo>...] .
+    exists <identificador> : <tipo> [ , <identificador> : <tipo> ..] .
 
 Ejemplo:
 
     filter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat . Vect m a
-    filter ? Nil       = Nil
+    filter _ Nil       = Nil
     filter g (x :: xs) = (if g x then \xs' => x :: xs' else id) filter g xs
 
 ### Parámetros explícitos con reutilización (REVISAR TÍTULO)
@@ -110,7 +133,7 @@ Para recibir un valor interesante a utilizar más adelante, se usa el *cuantific
 
 Se llama una función colocando su identificador y seguidamente valores a ser pasados como argumentos.
 
-    <identificador> [<expresión> [<expresión>..]]
+    <identificador> [ <expresión> [ <expresión> ..] ]
 
 Ejemplo:
 
@@ -122,7 +145,7 @@ Esa llamada da igual a `S Z`.
 
 Se puede instanciar directamente los argumentos implícitos usando llaves (`{`, `}`). Probablemente únicamente del `forall`.
 
-    <identificador> [{ <implícito> = <expresión>[, <implícito> = <expresión> ]}] [<expresión> [<expresión>..]]
+    <identificador> [ { <implícito> = <expresión>[ , <implícito> = <expresión> ] } ] [ <expresión> [ <expresión> ..] ]
 
 Ejemplo:
 
@@ -137,24 +160,24 @@ Esa llamada da igual a `S Z`.
     not False = True
 
     _&&_ : Bool -> Bool -> Bool
-    False && ? = False
+    False && _ = False
     True  && x = x
 
     _||_ : Bool -> Bool -> Bool
-    True  || ? = True
+    True  || _ = True
     False || x = x
 
     id : forall t:Type . t -> t
     id x = x
 
     the : (with t:Type) -> t -> t
-    the ? x = x
+    the _ x = x
 
     const : forall a:Type, b:Type . a -> b -> a
-    const x ? = x
+    const x _ = x
 
     map : forall a:Type, b:Type . (a -> b) -> List a -> List b
-    map ? Nil     = Nil
+    map _ Nil     = Nil
     map f (x::xs) = f x :: map f xs
 
     map (\x => x * 2) [1,2,3]           : List Nat -- azúcar sintáctica
@@ -303,7 +326,7 @@ Por ejemplo:
     Nat is Eq where
         Z     == Z     = True
         (S n) == (S m) = n == m
-        ?     == ?     = False
+        _     == _     = False
 
 ### ¿Petición?
 
@@ -321,7 +344,7 @@ Por ejemplo:
     contains : forall t is Eq : Type . t -> List t -> Bool
     contains : forall (t:Type) is Eq . t -> List t -> Bool
 
-    contains ? Nil     = False
+    contains _ Nil     = False
     contains a (x::xs) = (a == x) || contains a xs        -- cortocircuito
 
 
@@ -397,7 +420,7 @@ Por ejemplo:
     Nat is Eq where
         Z     == Z     = True
         (S n) == (S m) = n == m
-        ?     == ?     = False
+        _     == _     = False
 
 ## Modo de pruebas
 
