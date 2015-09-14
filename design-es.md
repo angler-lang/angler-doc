@@ -12,18 +12,14 @@ Las *importaciones* pueden ser *cualificadas*, es decir, agregando a su identifi
 
     [ import <identificador>  [ as <identificador> ] [ ( [identificador [ , <identificador> ..] ] ) ] ]
 
-Por ejemplo (ya que esta definición de sintaxis es como confusa):
+Por ejemplo:
 
     export IntMap, member, lookup, insert, update, keys, elems
 
-    import List  as L (lookup, foldr)
-    import Maybe      (Maybe, Just, Nothing)
-    import Monad as Monad
-    import Show
-
-    IntMap : forall a:Type . a -> Type
-
-    lookup : forall a:Type . Int -> IntMap a -> Maybe a
+    import List  as L   (lookup, foldr)             -- L.lookup, L.fodlr
+    import Maybe        (Maybe, Just, Nothing)      -- Maybe, Just, Nothing
+    import Map   as Map                             -- Map.*
+    import Show                                     -- *
 
 ## Comentarios
 
@@ -37,7 +33,7 @@ Comentarios como en Haskell.
 
 ## Funciones
 
-El operador `:` viene embebido en el lenguaje, si se considera un operador. ¿Y el operador `->`?.
+El símbolo `:` es reservado para el lenguaje, y el símbolo `->` es un operador que viene embebido en un programa.
 
 ### Declaración y definición
 
@@ -49,36 +45,21 @@ Definir una función es explicar el comportamiento de esta por los argumentos *r
 
     <identificador> [ <argumento> [ <argumento> ..] ] = <expresión>
 
-#### Funciones abiertas
-
-Las *funciones abiertas* van de la mano con los *tipos abiertos*, se pueden definir más casos cuando se vayan necesitando.
-
-    toUSD : Currency -> Nat
-    toUSD (USD c) = c
-    toUSD (EUR c) = c * 2
-    -- ...
-
-#### Funciones cerradas
-
-Las *funciones cerradas* usan la palabra reservada `where` para indicar con indentación sus casos a considerar.
-
-    isUSD : Currency -> Bool where
-        isUSD (USD n) = True
-        isUSD other   = False
+Al final de una `<expresión>` o `<tipo>` se puede colocar la palabra reservada `where` para definir funciones dentro de un alcance sólo accesible por ésta expresión o tipo.
 
 #### *Don't care*
 
 Cuando no nos interesa usar un valor, en vez de darle un nombre poco significativo para hacerle referencia, le colocamos `_`, indicando que no haremos referencia a él más adelante.
 
-    isUSD : Currency -> Bool where
-        isUSD (USD _) = True
-        isUSD _       = False
+    isUSD : Currency -> Bool
+    isUSD (USD _) = True
+    isUSD _       = False
 
 #### λ-funciones
 
 Funciones que no tienen un identificador.
 
-    \x => x * 2
+    \x -> x * 2
 
 Ésta función es de tipo `Nat -> Nat` (o con algún número, definir bien).
 
@@ -87,8 +68,10 @@ Funciones que no tienen un identificador.
 Tienen una sintaxis especial para lograr una declaración intuitiva. Se usa el caracter *piso* (`_`) para indicar dónde van los argumentos.
 
     _+_ : Nat -> Nat -> Nat
-    n + Z     = n
-    n + (S m) = S (n + m)
+    -- n + Z     = n            -- capaz posible?
+    -- n + (S m) = S (n + m)    -- capaz posible?
+    _+_ n Z     = n
+    _+_ n (S m) = S (n + m)
 
     -- if-then-else definido en el lenguaje, 😱
     if_then_else_ : forall t:Type . Bool -> t -> t -> t
@@ -118,15 +101,15 @@ Para indicar un parámetro implícito que aplica para *algún* elemento de ese t
 
 Ejemplo:
 
-    filter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat . Vect m a
+    filter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> (exists m:Nat ; Vect m a)
     filter _ Nil       = Nil
-    filter g (x :: xs) = (if g x then \xs' => x :: xs' else id) filter g xs
+    filter g (x :: xs) = (if g x then (\xs' -> x :: xs') else id) filter g xs
 
 ### Parámetros explícitos con reutilización (REVISAR TÍTULO)
 
-Para recibir un valor interesante a utilizar más adelante, se usa el *cuantificador* `with`.
+Para recibir un valor interesante a utilizar más adelante, se usa el *cuantificador* `select`.
 
-    the : (with t:Type) -> t -> t
+    the : (select t:Type) -> t -> t
     the t x = x
 
 ### Llamadas de funciones
@@ -137,21 +120,23 @@ Se llama una función colocando su identificador y seguidamente valores a ser pa
 
 Ejemplo:
 
-    the Nat (S Z)
+    the Nat (S Z)                   -- = S Z        : Nat
 
-Esa llamada da igual a `S Z`.
+    filter even (1::2::3::4::Nil)   -- = 2::4::Nil  : (2 ; Vect 2 Nat)
+
+    filter odd                      -- : forall n:Nat . Vect n Nat -> (exists m:Nat ; Vect m Nat)
 
 #### Pasando argumentos implícitos
 
 Se puede instanciar directamente los argumentos implícitos usando llaves (`{`, `}`). Probablemente únicamente del `forall`.
 
-    <identificador> [ { <implícito> = <expresión>[ , <implícito> = <expresión> ] } ] [ <expresión> [ <expresión> ..] ]
+    <identificador> [ { <implícito> = <expresión> [ , <implícito> = <expresión> ] } ] [ <expresión> [ <expresión> ..] ]
 
 Ejemplo:
 
     id {t = Nat} (S Z)
 
-Esa llamada da igual a `S Z`.
+    filter odd { n = 10 }   -- : Vect 10 Nat -> (exists m:Nat ; Vect m Nat)
 
 ### Ejemplos de funciones
 
@@ -170,7 +155,7 @@ Esa llamada da igual a `S Z`.
     id : forall t:Type . t -> t
     id x = x
 
-    the : (with t:Type) -> t -> t
+    the : (select t:Type) -> t -> t
     the _ x = x
 
     const : forall a:Type, b:Type . a -> b -> a
@@ -180,8 +165,10 @@ Esa llamada da igual a `S Z`.
     map _ Nil     = Nil
     map f (x::xs) = f x :: map f xs
 
-    map (\x => x * 2) [1,2,3]           : List Nat -- azúcar sintáctica
-    map (\x => x * 2) (1::2::3::Nil)    : List Nat -- desazucarea a esto
+    -- llamadas de funciones
+
+    map (\x -> x * 2) [1,2,3]           : List Nat -- azúcar sintáctica
+    map (\x -> x * 2) (1::2::3::Nil)    : List Nat -- desazucarea a esto
 
     map {a = Nat}                       : forall b:Type . (Nat -> b) -> List Nat -> List b
 
@@ -197,28 +184,41 @@ El tipo `Type` viene embebido en el lenguaje, probablemente.
 
 #### Tipos cerrados
 
-Los *tipos cerrados* usan la palabra reservada `where` para indicar con indentación sus constructores.
+Los *tipos cerrados* usan la palabra reservada `closed` e indican después de `with` sus constructores con indentación.
 
-    Bool : Type where
+    closed Bool : Type with
         True : Bool
         False : Bool
 
 #### Tipos abiertos
 
-Los *tipos abiertos* no utilizan la palabra reservada `where`, sino que se van escribiendo constructores cuando se vayan necesitando.
+Los *tipos abiertos* se declaran usando la palabra reservada `open`, y pueden incluir la palabra reservada `with` para indicar constructores.
 
-    Currency : Type
+Luego de haber definido un tipo abierto, se puede reabrir con la palabra reservada `reopen` y colocarle constructores nuevos después de la palabra reservada `with`.
 
-    USD : Nat -> Currency
-    EUR : Nat -> Currency
-    VEF : Nat -> Currency
+    open Currency : Type with
+        USD : Nat -> Currency
+        EUR : Nat -> Currency
+
     -- ...
+    reopen Currency with
+        VEF : Nat -> Currency
+
+    -- Otro ejemplo
+
+    open Option : Type
+
+    -- ...
+
+    reopen Option with
+        One : Option
+        Two : Option
 
 #### Tipos dependientes
 
 Tipos que dependen de otros valores para ser construídos.
 
-    List : (with a:Type) -> Type where
+    closed List : (select a:Type) -> Type with
         Nil  : List a
         _::_ : a -> List a -> List a
 
@@ -226,66 +226,62 @@ Tipos que dependen de otros valores para ser construídos.
 
 Definir un *alias* para un tipo que se escriba mucho, o para darle mayor significado a lo que estamos haciendo.
 
-    String : Type where
-        String = List Char
+    String : Type 
+    String = List Char
 
-
-### λ-tipos
-
-???
 
 ### Otras cosas de tipos...
 
 ### Ejemplos de tipos
 
-    Bool : Type where
+    closed Bool : Type with
         True : Bool
         False : Bool
 
-    Nat : Type where
+    closed Nat : Type with
         Z : Nat
         S : Nat -> Nat
 
     -- And / Tuples
-    _/\_ : (with a:Type) -> (with b:Type) -> Type where
+    closed _/\_ : (select a:Type) -> (select b:Type) -> Type with
         (_,_) : a -> b -> a /\ b
 
     -- Should this type be in the standard?
-    _\/_ : (with a:Type) -> (with b:Type) -> Type where
+    closed _\/_ : (select a:Type) -> (select b:Type) -> Type with
         _<|   : a -> a \/ b
         |>_   : b -> a \/ b
         _<|>_ : a -> b -> a \/ b
 
     -- XOR
-    _=/=_ : (with a:Type) -> (with b:Type) -> Type where
+    closed _=/=_ : (select a:Type) -> (select b:Type) -> Type with
         _</= : a -> a =/= b
         =/>_ : b -> a =/= b
-    Either : (with a:Type) -> (with b:Type) -> Type where
+    closed Either : (select a:Type) -> (select b:Type) -> Type with
         Left  : a -> Either a b
         Right : b -> Either a b
-    _|_ : (with a:Type) -> (with b:Type) -> Type where
+    closed _|_ : (select a:Type) -> (select b:Type) -> Type with
         _<| : a -> a|b
         |>_ : b -> a|b
 
-    Maybe : (with a:Type) -> Type where
+    closed Maybe : (select a:Type) -> Type with
         Nothing : Maybe a
         Just    : a -> Maybe a
-    Maybe' : Type -> Type where
+    closed Maybe' : Type -> Type with
         Nothing : forall (a:Type) . Maybe' a
         Just    : forall (a:Type) . a -> Maybe' a
 
-    List : (with a:Type) -> Type where
+    closed List : (select a:Type) -> Type with
         Nil  : List a
         _::_ : a -> List a -> List a
-    List' : Type -> Type where
+    closed List' : Type -> Type with
         Nil  : forall (a:Type) . List' a
         _::_ : forall (a:Type) . a -> List' a -> List' a
 
-    Tree : (with a:Type) -> Type where
+    closed Tree : (select a:Type) -> Type with
         Leaf   : a -> Tree a
         Branch : Tree a -> Tree a -> Tree a
 
-    Vect : Nat -> (with a:Type) -> Type where
+    closed Vect : Nat -> (select a:Type) -> Type with
         Nil  : Vect Z a
         _::_ : forall n:Nat . a -> Vect n a -> Vect (S n) a
 
