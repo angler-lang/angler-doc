@@ -4,3 +4,4 @@ Este archivo almacenará ideas que se nos ocurran y capaz valga la pena implemen
 
 * Prueba de totalidad
 * Case .. of ..
+* Typed holes
