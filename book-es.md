@@ -22,7 +22,11 @@ Qué sucedió para llegar al resultado final.
 #### Mixfix Parser
 #### Type-checking
 
-### Cambios al diseño
+***********
+
+## Cuando ...
+
+***********
 
 # Resultados
 
@@ -43,6 +47,17 @@ Qué sucedió para llegar al resultado final.
 # Apéndice
 
 ## Clases
+
+## Extensiones
+
+### Comportamientos
+#### Azúcar sintáctica de monads
+
+### Lambdas
+
+### Literales polimórficos -- [1,2,3], "string, text"
+
+## Semántica operacional
 
 ## Gramática
 
