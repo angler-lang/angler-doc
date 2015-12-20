@@ -156,10 +156,10 @@ Pueden comenzar en cualquier parte de una línea con `{-` y terminan al consegui
 
 ```haskell
 {-
-        Este comentario ocupa varias líneas
-        {-
-                Hay anidación
-        -}
+    Este comentario ocupa varias líneas
+    {-
+        Hay anidación
+    -}
 Z + Z
 -}
 ```
@@ -364,7 +364,7 @@ El tipo existencial es:
 
 ```haskell
 closed Exists : (select a:Type) -> (a -> Type) -> Type with
-        <*_;_*> : forall a:Type, P:a -> Type . (select x:a) -> P x -> Exists a P
+    <*_;_*> : forall a:Type, P:a -> Type . (select x:a) -> P x -> Exists a P
 ```
 
 #### Cuantificador _select_
@@ -446,36 +446,36 @@ Son tipos cuya definición completa es conocida, se usa la palabra reservada `cl
 
 ```haskell
 closed <iden> : <type> with
-        <iden> : <type>
-        [ <iden> : <type> ..]
+    <iden> : <type>
+    [ <iden> : <type> ..]
 ```
 
 Por ejemplo, el conjunto de los _booleanos_ es un tipo cerrado:
 
 ```haskell
 closed Bool : Type with
-        True : Bool
-        False : Bool
+    True : Bool
+    False : Bool
 ```
 
 También los números naturales son representables con un tipo cerrado:
 
 ```haskell
 closed Nat : Type with
-        Z : Nat         -- zero
-        S : Nat -> Nat  -- succesor
+    Z : Nat         -- zero
+    S : Nat -> Nat  -- succesor
 ```
 
 Un ejemplo un poco más complejo es el de listas y de vectores:
 
 ```haskell
 closed List : Type -> Type with
-        Nil : forall t:Type . List t
-        _::_ : forall t:Type . t -> List t -> List t
+    Nil : forall t:Type . List t
+    _::_ : forall t:Type . t -> List t -> List t
 
 closed Vect : Nat -> Type -> Type with
-        VNil : forall t:Type . Vect Z t
-        _<::>_ : forall t:Type, n:Nat . t -> Vect n t -> Vect (S n) t
+    VNil : forall t:Type . Vect Z t
+    _<::>_ : forall t:Type, n:Nat . t -> Vect n t -> Vect (S n) t
 ```
 
 ### Tipos abiertos
@@ -490,8 +490,8 @@ Al declarar un tipo abierto, puede no conocerse ningún constructor de éste, po
 
 ```haskell
 open <iden> : <type> [ with
-        <iden> : <type>
-        [ <iden> : <type> ..]
+    <iden> : <type>
+    [ <iden> : <type> ..]
     ]
 ```
 
@@ -515,24 +515,24 @@ Después de haber introducido un tipo abierto, puede reabrirse éste para indica
 
 ```haskell
 reopen <iden> with
-        <iden> : <type>
-        [ <iden> : <type> ..]    
+    <iden> : <type>
+    [ <iden> : <type> ..]    
 ```
 
 Reapertura del ejemplo de monedas, actualizando el módulo:
 
 ```haskell
 reopen Currency with
-        XBT : Nat -> Currency       -- Bitcoin
+    XBT : Nat -> Currency       -- Bitcoin
 ```
 
 Reapertura del otro ejemplo, para agregar los primeros comandos:
 
 ```haskell
 reopen Command with
-        Run : Nat -> Command
-        Hit : Weapon -> Command
-        Jump : Command
+    Run : Nat -> Command
+    Hit : Weapon -> Command
+    Jump : Command
 ```
 
 ## Comportamientos
@@ -610,10 +610,10 @@ También se puede requerir comportamientos para la definición de otros:
 
 ```haskell
 behaviour Semigroup on t : Type defines
-        _<+>_ : t -> t -> t
+    _<+>_ : t -> t -> t
 
 behaviour Monoid on t : Type is Semigroup defines
-        neutral : t
+    neutral : t
 ```
 
 ### Alcances de comportamientos
@@ -643,9 +643,9 @@ scope All
 scope Any
 
 Bool is Semigroup at All with
-        _<+>_ = _&&_
+    _<+>_ = _&&_
 Bool is Semigroup at Any with
-        _<+>_ = _||_
+    _<+>_ = _||_
 
 Bool is Monoid at All with
     neutral = True
@@ -689,9 +689,9 @@ scope Any with
         neutral = False
 ```
 
-#### Indicación de alcance de comportamientos en aplicación
+#### Indicación de alcance de comportamientos
 
-Para usar un alcance específico en una aplicación de función, se debe indicar usando la palabra reservada `at`. Buscará todas las instacias en el alcance indicado, y si no las consiguió en el alcance por defecto.
+Para usar un alcance específico en una expresión, se debe indicar usando la palabra reservada `at`. Buscará todas las instacias en el alcance indicado, y si no las consiguió en el alcance por defecto.
 
 ```haskell
 <expr> at <iden>
@@ -708,73 +708,59 @@ isNeutral True at All   -- True
 isNeutral True at Any   -- False
 ```
 
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-#
-****
-
 ## Modo de pruebas
 
 ___TODO___
 
 ## Azúcar Sintáctica
 
-Hay ciertas partes de la sintaxis del lenguaje que podríamos facilitar para la escritura, esto es llamado _azúcar sintáctica_ (syntactic sugar).
-
-Aquí se listaran __posibles__ casos de azúcar sintáctica.
+Hay ciertas construcciones en el lenguaje a las que se les podría dar una sintaxis especial para facilitar su escritura, esto lo llamamos _azúcar sintáctica_.
 
 ### Listas
 
 La versión _azucarada_ de listas sería `[0, 1, 2]`, para ser _desazucarado_ a `0 :: 1 :: 2 :: Nil`.
 
+Aunque esto se puede lograr agregando algunos operadores y funciones, debemos considerar que `,` no es un símbolo utilizable para identificadores:
+
+```haskell
+operator [_  prefix  9
+operator  _] postfix 10
+
+[_ : forall t:Type . List t -> List t
+[_ = id
+
+_] : forall t:Type . t -> List t
+xs ] = xs :: Nil
+
+sugarTest : List Nat
+sugarTest = [ 0 :: 1 :: 2 ]
+```
+
 ### Cadenas de caracteres
 
-La versión _azucarada_ de cadenas de caracteres (`String`) sería `"Text\n"`, para ser _desazucarado_ a `'T' :: 'e' :: 'x' :: 't' :: '\n' :: Nil`.
+La versión _azucarada_ de cadenas de caracteres (`String`) serían todos los caracteres seguidos entre dos comillas doblres (`"`).
+
+```haskell
+String : Type
+String = List Char
+```
+
+Por ejemplo, `"Text\n"` es _desazucarado_ a `'T' :: 'e' :: 'x' :: 't' :: '\n' :: Nil`.
 
 ### Notación `do`
 
-La notación `do` se usa para _monads_:
+La notación `do` se usa para _Applicative_:
 
 ```haskell
 do
     x <- action0
     action2 x
     z <- action3
-    action4 z
+    action4 z x
 ```
 
 Se convierte en:
 
 ```haskell
-action0 >>= \x =>
-    action2 x >>
-        action3 >>= \z =>
-            action4 z
+action0 >>= \x -> action2 x >> action3 >>= \z -> action4 z x
 ```
