@@ -1,4 +1,5 @@
 # Angler
+
 Angler es un lenguaje de programación funcional con un sistema de tipos dependientes orientado a la enseñanza de las matemáticas discretas.
 
 ## Definición de sintaxis
@@ -11,6 +12,10 @@ Angler es un lenguaje de programación funcional con un sistema de tipos dependi
     + `operator <iden>`
 - `<expr>`: para una expresión.
 - `<type>`: para una expresión que debe ser de tipo `Type`.
+- `<arg>`: para argumentos.
+    + `_` (_don't care_)
+    + `<iden>`
+    + `<expr>`
 
 ## Identificadores
 
@@ -55,7 +60,7 @@ Aquí una lista de identificadores que son reservados para el lenguaje y su porq
 - `(` y `)`: Para uso típico de forzar asociación
 - `{` y `}`: Para aplicación implícita
 - `,`: Para listas de identificadores y listas de anotación de tipos
-- `_`: Para denotar un valor que no es de interés (don't care)
+- `_`: Para denotar un valor que no es de interés (_don't care_)
 - `export`: Para indicar la lista de exportaciones
 - `import`: Para importaciones
 - `as`: Para importaciones cualificadas
@@ -124,7 +129,7 @@ import List  as L   (lookup, foldr)               -- L.lookup, L.fodlr
 
 ## Comentarios
 
-Los comentarios en Angler son como en Haskell. Los comentarios pueden comenzar en cualquier punto del programa.
+Los comentarios pueden comenzar en cualquier punto del programa.
 
 ```haskell
 {-
@@ -136,9 +141,32 @@ Z + m = m                   -- base case of addition
 S n + m = S (n + m)         -- recursive case
 ```
 
+### Comentarios de una línea
+
+Pueden comenzar en cualquier parte de una línea con `--` y abarcan el resto de ésta.
+
+```haskell
+-- esto es un comentario de una línea
+Z + Z   -- esto es otro comentario
+```
+
+### Comentarios de varias líneas
+
+Pueden comenzar en cualquier parte de una línea con `{-` y terminan al conseguir un `-}`; tienen anidación.
+
+```haskell
+{-
+        Este comentario ocupa varias líneas
+        {-
+                Hay anidación
+        -}
+Z + Z
+-}
+```
+
 ## Funciones
 
-Una función consta de dos partes, su _declaración_ y su(s) _definición(es)_, la definición es opcional.
+Una función consta de dos partes, su _declaración_ y su(s) _definición(es)_; la definición es opcional.
 
 Ejemplo, la función identidad:
 
@@ -155,7 +183,9 @@ Una declaración de función consta de un identificador para ésta y el tipo aso
 <iden> : <type>
 ```
 
-En el ejemplo de la función identidad, la declaración es la siguiente línea `id : forall t:Type . t -> t`. La función de composición puede tener la siguiente declaración:
+En el ejemplo de la función identidad, la declaración es la línea `id : forall t:Type . t -> t`.
+
+La función de composición puede tener la siguiente declaración:
 
 ```haskell
 _._ : forall a:Type, b:Type, c:Type . (b -> c) -> (a -> b) -> (a -> c)
@@ -171,10 +201,10 @@ Esto declara el tipo que debe tener la función a ser definida.
 
 ### Definición de funciones
 
-Una definición de función consta de su identificador, seguido por sus argumentos, y la expresión que la *define*, separados por `=`.
+Una definición de función consta de su identificador, seguido por sus argumentos y la expresión que la *define*, separados por `=`.
 
 ```haskell
-<iden> [<iden> ..] = <expr>
+<iden> [<arg> ..] = <expr>
 ```
 
 En el ejemplo de la función identidad, la definición es la línea `id x = x`; donde se separa en la siguientes partes:
@@ -189,37 +219,251 @@ La función de composición puede tener la siguente definición:
 _._ f g x = f (g x)
 ```
 
-Aquí tenemos tres el identificador `_._`, los argumentos `f`, `g` y `x`, y la expresión `f (g x)`.
+Aquí tenemos el identificador `_._`, tres argumentos `f`, `g` y `x`, y la expresión `f (g x)`.
 
-Si definimos un operador para `_._` (`operator _._ infixR 9`), podríamos definir la función composición de la siguiente forma:
+Si definimos un operador para `_._` (`operator _._ infixR 9`), podríamos definir la función composición de la siguiente manera:
 
 ```haskell
 (f . g) x = f (g x)
 ```
 
-Que es *interesante*, pues así se usaría en código probablemente.
+#### Argumentos
+
+Los argumentos pueden ser un identificador, una expresión de *pattern matching*, o un caracter *piso* (`_`) para indicar que no importa su valor.
+
+Al leer cada parte de un argumento, se busca en la tabla de símbolos del programa; si no se encuentra en ésta, se agrega como identificador para la expresión de definición; si sí se encuentra, se usa para pattern matching.
+
+Ejemplo, la función para modificación de los elementos de una lista:
+
+```haskell
+map : forall a:Type, b:Type . (a -> b) -> List a -> List b
+map _ Nil = Nil
+map f (x :: xs) = f x :: map f xs
+```
+
+Un análisis por definición:
+- __Primera definición `map _ Nil = ...`__
+    + __Primer argumento `_`__: Se usa piso `_` para ignorar la función de modificación
+    + __Segundo argumento `Nil`__: Se usa pattern matching para una lista de cero elementos
+- __Segunda definición `map f (x :: xs) = ...`__
+    + __Primer argumento `f`__: Se usa el identificador `f` para denotar la función de modificación
+    + __Segundo argumento `x :: xs`__: Se usa pattern matching para una lista de uno o más elementos
+
+### Lambda funciones
+
+Son funciones que no tienen un identificador asociado a ellas.
+
+```haskell
+\ <arg> [<arg> ..] -> <expr>
+```
+
+Algunos ejemplos:
+
+```haskell
+\ x -> x * 2            -- double
+\ _ :: xs -> xs         -- tail
+\ x _ -> x              -- const
+```
+
+### Aplicación de funciones
+
+Para usar una función, se coloca su expresión seguida de su argumento, en caso de haber.
+
+```haskell
+<expr> <expr>
+```
+
+Por ejemplo, usando la función de composición:
+
+```haskell
+_._ even length
+```
+
+Ésto deja un valor con el tipo `forall a:Type . List a -> Bool`, veamos porqué:
+
+```haskell
+even : Nat -> Bool
+length : forall a:Type . List a -> Nat
+_._ : forall a:Type, b:Type, c:Type . (b -> c) -> (a -> b) -> (a -> c)
+```
+
+al aplicar `_._ even` nos queda una función del tipo:
+
+```haskell
+_._ even : forall a:Type . (a -> Nat) -> (a -> Bool)
+```
+
+luego, al aplicar esa función a `length`, nos queda:
+
+```haskell
+_._ even length : forall a:Type . List a -> Bool
+```
+
+### Cuantificadores
+
+Si queremos escribir una función para valores de un *estilo*, se usan cuantificadores.
+
+#### Cuantificador *forall*
+
+Para indicar tipos que cumplen con un *estilo*.
+
+```haskell
+forall <iden> : <type> [ , <iden> : <type> ..] . <expr>
+```
+
+Esto introduce los identificadores mencionados y con el tipo indicado.
+
+Por ejemplo, la función identidad funciona para cualquier tipo:
+
+```haskell
+id : forall t:Type . t -> t
+id x = x
+```
+
+Otro ejemplo es la función `vmap`, que funciona para vectores de cualquier tipo y tamaño:
+
+```haskell
+vmap : forall a:Type, b:Type, n:Nat . (a -> b) -> Vect n a -> Vect n b
+vmap _ VNil = VNil
+vmap f (x <::> xs) = f x <::> vmap f xs
+```
+
+##### Aplicación de parámetros implícitos
+
+Este cuantificador es el único que puede recibir una aplicación implícita, ya que sirve *para todos* los valores:
+
+```haskell
+<expr> { <iden> = <expr> }
+```
+
+Un ejemplo sería utilizarlo para reducir el dominio de una función:
+
+```haskell
+map {b = Bool} : forall a:Type . (a -> Bool) -> List a -> List Bool
+```
+
+#### Cuantificador *exists*
+
+Para indicar que existe un valor de un tipo, aunque no sepamos cuál será aún.
+
+```haskell
+exists <iden> : <type> ; <expr>
+```
+
+Esto introduce el identificador mencionado y con el tipo indicado, pero retorna una *tupla* con el valor calculado y el valor encontrado para el existencial.
+
+Un ejemplo es la función para filtrar elementos de un vector:
+
+```haskell
+vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat ; Vect m a
+vfilter _ VNil = VNil
+vfilter g (x <::> xs) = (if g x then _<::>_ x else id) (vfilter g xs)
+```
+
+El tipo existencial es:
+
+```haskell
+closed Exists : (select a:Type) -> (a -> Type) -> Type with
+        <*_;_*> : forall a:Type, P:a -> Type . (select x:a) -> P x -> Exists a P
+```
+
+#### Cuantificador *select*
+
+Este *cuantificador* sirve para referirse al valor del tipo indicado más adelante.
+
+```haskell
+select <iden> : <type>
+```
+
+Un ejemplo es la función identidad con anotación de tipo que llamaremos `the`:
+
+```haskell
+the : (select t:Type) -> t -> t
+the _ x = x
+```
+
+Esta función recibe el tipo que espera explícitamente, a diferencia de `id`, que lo recibe implícitamente.
+
+Otro ejemplo es la conversión de lista a vector:
+
+```haskell
+ListToVect : forall t:Type . (select xs : List t) -> Vect (length xs) t
+ListToVect Nil = VNil
+ListToVect (x :: xs) = x <::> ListToVect xs
+```
+
+## Operadores
+
+Los operadores sirven para usar funciones de manera natural; se definen con una asociatividad y precedencia, el identificador indica dónde espera los argumentos usando el caracter piso (`_`).
+
+```haskell
+operator <iden> <fixity> <prec>
+```
+
+donde `<fixity>` es una de las siguientes asociatividades: `postfix`, `prefix`, `infixL`, `infixR`, `infixN`; y `<prec>` es el número natural para indicar su precedencia.
+
+Algunos ejemplos:
+
+```haskell
+operator _!            postfix 20
+operator -_            prefix  19
+operator _^_           infixR  17
+operator _+_           infixL  15
+operator _-_           infixL  15
+operator _==_          infixN  10
+operator _/=_          infixN  10
+operator if_then_else_ prefix  5
+```
+
+Esto hará que expresiones que cumplan esas reglas, se *transformen* a aplicaciones de funciones.
+
+Por ejemplo:
+
+```haskell
+if a == b then - x else y       -- if_then_else_ (_==_ a b) (-_ x) y
+- x! + y ^ 2 == z               -- _==_ (_+_ (-_ (_! x)) (_^_ y 2)) z
+```
+
+Sólo se buscará estos *patrones* al definir un operador explícitamente, es decir, los identificadores con `_` en ellos no tienen una asociatividad y precedencia por defecto.
+
+También se puede usar en la definición de funciones:
+
+```haskell
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if True  then x else _ = x      -- if_then_else_ True  x _ = x
+if False then _ else y = y      -- if_then_else_ False _ y = y
+```
 
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
+#
 ****
-****
-****
-****
-****
-****
-****
+#
 ****
 
 ### Declaración y definición
@@ -247,7 +491,7 @@ Cuando no nos interesa usar un valor, en vez de darle un nombre poco significati
 ```haskell
 isUSD : Currency -> Bool
 isUSD (USD _) = True
-isUSD _        = False
+isUSD _       = False
 ```
 
 #### λ-funciones
