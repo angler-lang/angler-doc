@@ -436,11 +436,11 @@ if False then _ else y = y      -- if_then_else_ False _ y = y
 
 ## Tipos
 
-En Anlger podemos declarar dos diferentes _tipos_ de tipos; los _cerrados_ y los _abiertos_.
+En Angler podemos declarar dos diferentes _tipos_ de tipos; los _cerrados_ y los _abiertos_.
 
 ### Tipos cerrados
 
-Son tipos cuya definición completa es conocida, se usa la palabra reservada `closed` para su definción. Se define con un identificador, un tipo, y sus posibles constructores.
+Son tipos cuya definición completa es conocida, se usa la palabra reservada `closed` para su definición. Se define con un identificador, un tipo, y sus posibles constructores.
 
 > El tipo `_->_` es un tipo cerrado embebido en el lenguaje.
 
@@ -466,7 +466,7 @@ closed Nat : Type with
     S : Nat -> Nat  -- succesor
 ```
 
-Un ejemplo un poco más complejo es el de listas y de vectores:
+Un ejemplo un poco más complejo es el de listas y el de vectores:
 
 ```haskell
 closed List : Type -> Type with
@@ -480,7 +480,7 @@ closed Vect : Nat -> Type -> Type with
 
 ### Tipos abiertos
 
-Los tipos abiertos se comportan exactamente igual que los tipos cerrados, pero sirve para conjuntos cuya definición completa es desconocida (o infinita).
+Se comportan como los tipos cerrados, pero sirven para conjuntos cuya definición completa es desconocida (o infinita).
 
 > El tipo `Type` es un tipo abierto embebido en el lenguaje. Cada tipo nuevo se considera una _reapertura_ de éste.
 
@@ -537,11 +537,11 @@ reopen Command with
 
 ## Comportamientos
 
-Los comportamientos sirven para obtener un estilo de sobrecarga de funciones, esto es, usar un mismo identificador para diferentes funciones (con tipos diferentes).
+Sirven para obtener un _estilo_ de sobrecarga de funciones, esto es, usar un mismo identificador para diferentes funciones (con tipos diferentes).
 
 ### Definición
 
-Se definen con un identificador; un _argumento_ con su tipo; las funciones que define; y sus dependencias, en caso de existir.
+Se definen con un identificador, un _argumento_ con su tipo, las funciones que define y sus dependencias (en caso de existir).
 
 ```haskell
 behaviour <iden> on <iden> : <type> defines
@@ -620,7 +620,7 @@ behaviour Monoid on t : Type is Semigroup defines
 
 Podríamos querer hacer varias instancias de un comportamiento para el mismo tipo, podemos llevarlo a cabo usando alcances de comportamientos. Hay alcances _abiertos_ y _cerrados_.
 
-#### Definción de alcances de comportamientos abiertos
+#### Definición de alcances de comportamientos abiertos
 
 Simplemente se le asigna un nombre.
 
@@ -710,7 +710,7 @@ isNeutral True at Any   -- False
 
 ## Modo de pruebas
 
-___TODO___
+___TO DO___
 
 ## Azúcar Sintáctica
 
@@ -732,8 +732,8 @@ operator  _] postfix 10
 _] : forall t:Type . t -> List t
 xs ] = xs :: Nil
 
-sugarTest : List Nat
-sugarTest = [ 0 :: 1 :: 2 ]
+list : List Nat
+list = [ 0 :: 1 :: 2 ]
 ```
 
 ### Cadenas de caracteres
@@ -749,18 +749,18 @@ Por ejemplo, `"Text\n"` es _desazucarado_ a `'T' :: 'e' :: 'x' :: 't' :: '\n' ::
 
 ### Notación `do`
 
-La notación `do` se usa para _Applicative_:
+La notación `do` se usa para _Applicative_, por ejemplo:
 
 ```haskell
 do
-    x <- action0
-    action2 x
-    z <- action3
-    action4 z x
+    x <- act0
+    act1 x
+    y <- act2
+    act3 y x
 ```
 
 Se convierte en:
 
 ```haskell
-action0 >>= \x -> action2 x >> action3 >>= \z -> action4 z x
+act0 >>= \x -> act1 x >> act2 >>= \y -> act3 y x
 ```
