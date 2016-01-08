@@ -73,7 +73,7 @@ Aquí una lista de identificadores que son reservados para el lenguaje y su porq
 - `forall`: Para expresiones _forall_
 - `exists`: Para expresiones _exists_
 - `select`: Para expresiones _select_
-- `behaviour`, etc.: Para comportamientos
+- `behaviour`, `on`, `defines`, `is`: Para comportamientos
 - `operator`: Para definición de operadores
 - `prefix`: Para definir un operador como asociativo prefijo (derecho)
 - `postfix`: Para definir un operador como asociativo sufijo (izquierdo)
@@ -83,10 +83,13 @@ Aquí una lista de identificadores que son reservados para el lenguaje y su porq
 
 ## Elementos embebidos
 
-Los siguientes identificadores están embebidos en el lenguaje:
-- `Type`: El tipo universal, del que todos los demás tipos son _subtipos_
+Los siguientes elementos están embebidos en el lenguaje:
+
+- `Type`: El tipo universal, del que todos los demás tipos son _subtipos_, `Type` es _subtipo_ de sí mismo.
 - `_->_`: Para la construcción de tipos de funciones, _de un tipo al otro tipo_.
     - El constructor de este tipo sería las lambda-funciones `\x -> e`.
+- `Exists`: El tipo existencial, sirve para construir un valor que depende de otro valor de un tipo dado.
+- `<*_;_*>`: El constructor de tipo existencial, devuelve el valor y la construcción lograda con éste.
 
 ## Módulo
 
@@ -152,7 +155,7 @@ Z + Z   -- esto es otro comentario
 
 ### Comentarios de varias líneas
 
-Pueden comenzar en cualquier parte de una línea con `{-` y terminan al conseguir un `-}`; tienen anidación.
+Pueden comenzar en cualquier parte de una línea con `{-` y terminan al conseguir un `-}`; los comentarios de varias líneas tienen anidación.
 
 ```haskell
 {-
@@ -191,7 +194,7 @@ La función de composición puede tener la siguiente declaración:
 _._ : forall a:Type, b:Type, c:Type . (b -> c) -> (a -> b) -> (a -> c)
 ```
 
-Nótese que el operador `->` es asociativo a la derecha, por lo que la siguiente declaración es equivalente:
+Dado a que el operador `->` es asociativo a la derecha, la siguiente declaración es equivalente:
 
 ```haskell
 _._ : forall a:Type, b:Type, c:Type . (b -> c) -> (a -> b) -> a -> c
@@ -231,7 +234,7 @@ Si definimos un operador para `_._` (`operator _._ infixR 9`), podríamos defini
 
 Los argumentos pueden ser un identificador, una expresión de _pattern matching_, o un caracter _piso_ (`_`) para indicar que no importa su valor.
 
-Al leer cada parte de un argumento, se busca en la tabla de símbolos del programa; si no se encuentra en ésta, se agrega como identificador para la expresión de definición; si sí se encuentra, se usa para pattern matching.
+Al leer cada parte de un argumento, se busca en la tabla de símbolos del programa; si no se encuentra en ésta, se agrega como identificador para la expresión de definición; si se encuentra, se usa para pattern matching.
 
 Ejemplo, la función para modificación de los elementos de una lista:
 
@@ -241,13 +244,13 @@ map _ Nil = Nil
 map f (x :: xs) = f x :: map f xs
 ```
 
-Un análisis por definición:
+Se hará un análisis por cada definición:
 - __Primera definición `map _ Nil = ...`__
-    + __Primer argumento `_`__: Se usa piso `_` para ignorar la función de modificación
-    + __Segundo argumento `Nil`__: Se usa pattern matching para una lista de cero elementos
+    + __Primer argumento `_`__: Se usa piso `_` para ignorar la función de modificación.
+    + __Segundo argumento `Nil`__: Se usa pattern matching para reconocer una lista de cero elementos.
 - __Segunda definición `map f (x :: xs) = ...`__
-    + __Primer argumento `f`__: Se usa el identificador `f` para denotar la función de modificación
-    + __Segundo argumento `x :: xs`__: Se usa pattern matching para una lista de uno o más elementos
+    + __Primer argumento `f`__: Se usa el identificador `f` para denotar la función de modificación.
+    + __Segundo argumento `x :: xs`__: Se usa pattern matching para reconocer una lista de uno o más elementos, introduciendo los identificadores `x` y `xs` como _cabeza_ y _cola_ de la lista, respectivamente.
 
 ### Lambda funciones
 
@@ -261,25 +264,30 @@ Algunos ejemplos:
 
 ```haskell
 \ x -> x * 2            -- double
-\ _ :: xs -> xs         -- tail
+\ (_ :: xs) -> xs       -- tail
 \ x _ -> x              -- const
 ```
 
 ### Aplicación de funciones
 
-Para usar una función, se coloca su expresión seguida de su argumento, en caso de haber.
+Para usar una función, se coloca su expresión seguida de su argumento. La aplicación de funciones tiene asociatividad izquierda, es decir, en caso de haber varias aplicaciones seguidas, se aplican los dos más izquierdos y luego se aplica eso al siguiente valor a su derecha, y así sucesivamente.
 
 ```haskell
 <expr> <expr>
 ```
-
-Por ejemplo, usando la función de composición:
+Un ejemplo sencillo es la aplicación de negación booleana:
 
 ```haskell
-_._ even length
+not True : Bool     -- False
 ```
 
-ésto deja un valor con el tipo `forall a:Type . List a -> Bool`, veamos porqué:
+Un ejemplo más complicado con tres aplicaciones, usando la función de composición (`_._`), la función que indica si un número es par (`even`) y la función que indica la cantidad de elementos en una lista (`length`), obtenemos una función que calcula si la cantidad de elementos en una lista es par:
+
+```haskell
+_._ even length : forall a:Type . List a -> Bool
+```
+
+veamos porqué tiene ese tipo, tenemos que los identificadores utilizados tienen los tipos:
 
 ```haskell
 even : Nat -> Bool
@@ -301,17 +309,17 @@ _._ even length : forall a:Type . List a -> Bool
 
 ### Cuantificadores
 
-Si queremos escribir una función para valores de un _estilo_, se usan cuantificadores.
+Para asociar identificadores a valores de un tipo a ser usados posteriormente en la firma.
 
 #### Cuantificador _forall_
 
-Para indicar tipos que cumplen con un _estilo_.
+Para asociar identificadores a un valor arbitrario de un tipo dado, como generalización.
 
 ```haskell
 forall <iden> : <type> [ , <iden> : <type> ..] . <expr>
 ```
 
-Esto introduce los identificadores mencionados y con el tipo indicado.
+Ésto introduce los identificadores mencionados y con el tipo indicado.
 
 Por ejemplo, la función identidad funciona para cualquier tipo:
 
@@ -320,7 +328,7 @@ id : forall t:Type . t -> t
 id x = x
 ```
 
-Otro ejemplo es la función `vmap`, que funciona para vectores de cualquier tipo y tamaño:
+Otro ejemplo es la función `vmap`, que funciona para vectores, un vector es una lista a la que se le específica no sólo el tipo a contener, sino la cantidad de elementos dentro de ésta:
 
 ```haskell
 vmap : forall a:Type, b:Type, n:Nat . (a -> b) -> Vect n a -> Vect n b
@@ -328,7 +336,13 @@ vmap _ VNil = VNil
 vmap f (x <::> xs) = f x <::> vmap f xs
 ```
 
-##### Aplicación de parámetros implícitos
+##### Parámetros implícitos
+
+Son los identificadores asociados en un _forall_ (e.g. la `t` en `id : forall t:Type . t -> t`).
+
+Son implícitos ya que los argumentos de la función normalemente determinan sus valores. Sin embargo, no dejan de ser argumentos de la función ya que la misma depende de éstos.
+
+###### Aplicación de parámetros implícitos
 
 Este cuantificador es el único que puede recibir una aplicación implícita, ya que sirve _para todos_ los valores:
 
@@ -344,28 +358,36 @@ map {b = Bool} : forall a:Type . (a -> Bool) -> List a -> List Bool
 
 #### Cuantificador _exists_
 
-Para indicar que existe un valor de un tipo, aunque no sepamos cuál será aún.
+Para asociar identificadores a un valor específico de un tipo dado, como testigo.
 
 ```haskell
 exists <iden> : <type> ; <expr>
 ```
 
-Esto introduce el identificador mencionado y con el tipo indicado, pero retorna una _tupla_ con el valor calculado y el valor encontrado para el existencial.
+Ésto introduce el identificador mencionado y con el tipo indicado, pero retorna una _tupla_ con el valor calculado y el valor encontrado para el existencial.
 
 Un ejemplo es la función para filtrar elementos de un vector:
 
 ```haskell
 vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat ; Vect m a
 vfilter _ VNil = VNil
-vfilter g (x <::> xs) = (if g x then _<::>_ x else id) (vfilter g xs)
+vfilter g (x <::> xs) = if g x then <* S l ; x <::> xs' *> else <* l ; xs' *>
+    where
+        <* l ; xs' *> = vfilter g xs
 ```
 
-El tipo existencial es:
+Se utiliza la función recién definida en el siguiente ejemplo:
 
 ```haskell
-closed Exists : (select a:Type) -> (a -> Type) -> Type with
-    <*_;_*> : forall a:Type, P:a -> Type . (select x:a) -> P x -> Exists a P
+vfilter even (2 <::> 1 <::> 4 <::> VNil) : exists m:Nat ; Vect m Nat
 ```
+Que es igual a:
+
+```haskell
+<* 2 ; 2 <::> 4 <::> VNil *>
+```
+
+La estructura del tipo existencial será definida más adelante.
 
 #### Cuantificador _select_
 
@@ -375,7 +397,7 @@ Este _cuantificador_ sirve para referirse al valor del tipo indicado más adelan
 select <iden> : <type>
 ```
 
-Un ejemplo es la función identidad con anotación de tipo que llamaremos `the`:
+Un ejemplo es la función identidad con anotación de tipo, que llamaremos `the`:
 
 ```haskell
 the : (select t:Type) -> t -> t
@@ -387,22 +409,31 @@ Esta función recibe el tipo que espera explícitamente, a diferencia de `id`, q
 Otro ejemplo es la conversión de lista a vector:
 
 ```haskell
-ListToVect : forall t:Type . (select xs : List t) -> Vect (length xs) t
+ListToVect : forall t:Type . (select lst : List t) -> Vect (length lst) t
 ListToVect Nil = VNil
 ListToVect (x :: xs) = x <::> ListToVect xs
 ```
 
 ## Operadores
 
-Los operadores sirven para usar funciones de manera natural; se definen con una asociatividad y precedencia, el identificador indica dónde espera los argumentos usando el caracter piso (`_`).
+Los operadores sirven para usar ciertas funciones de manera _natural_; se definen con una asociatividad y precedencia, el identificador indica dónde espera los argumentos usando el caracter piso (`_`).
 
 ```haskell
 operator <iden> <fixity> <prec>
 ```
 
-donde `<fixity>` es una de las siguientes asociatividades: `postfix`, `prefix`, `infixL`, `infixR`, `infixN`; y `<prec>` es el número natural para indicar su precedencia.
+donde `<fixity>` es una de las siguientes opciones:
 
-Algunos ejemplos:
+- `postfix`: Para operadores _postfijos_.
+- `prefix`: Para operadores _prefijos_.
+- `infixL`: Para operadores _infijos_ con asociatividad izquierda.
+- `infixR`: Para operadores _infijos_ con asociatividad derecha.
+- `infixN`: Para operadores _infijos_ sin asociatividad.
+- `closed`: Para operadores _cerrados_, éstos no tienen `_` al lado izquiero ni derecho del identificador.
+
+y `<prec>` es un número natural para indicar su precedencia, donde mientras mayor sea el valor, mayor precedencia tiene el operador. Si la asociatividad es `closed`, no se indica la precedencia.
+
+Algunos ejemplos válidos:
 
 ```haskell
 operator _!            postfix 20
@@ -413,18 +444,19 @@ operator _-_           infixL  15
 operator _==_          infixN  10
 operator _/=_          infixN  10
 operator if_then_else_ prefix  5
+operator <_;_>         closed
 ```
 
-Esto hará que expresiones que cumplan esas reglas, se _transformen_ a aplicaciones de funciones.
+Estos operadores harán que expresiones que cumplan esas reglas, se _transformen_ a aplicaciones de funciones.
 
 Por ejemplo:
 
 ```haskell
-if a == b then - x else y       -- if_then_else_ (_==_ a b) (-_ x) y
+if a == b then - - x else y       -- if_then_else_ (_==_ a b) (-_ (-_ x)) y
 - x! + y ^ 2 == z               -- _==_ (_+_ (-_ (_! x)) (_^_ y 2)) z
 ```
 
-Sólo se buscará estos _patrones_ al definir un operador explícitamente, es decir, los identificadores con `_` en ellos no tienen una asociatividad y precedencia por defecto.
+Sólo se buscarán estos _patrones_ al definir un operador explícitamente, es decir, los identificadores (aunque contengan `_`) no serán consdierados operadores, por lo que no sufrirán ninguna transformación.
 
 También se puede usar en la definición de funciones:
 
@@ -442,7 +474,6 @@ En Angler podemos declarar dos diferentes _tipos_ de tipos; los _cerrados_ y los
 
 Son tipos cuya definición completa es conocida, se usa la palabra reservada `closed` para su definición. Se define con un identificador, un tipo, y sus posibles constructores.
 
-> El tipo `_->_` es un tipo cerrado embebido en el lenguaje.
 
 ```haskell
 closed <iden> : <type> with
@@ -457,6 +488,7 @@ closed Bool : Type with
     True : Bool
     False : Bool
 ```
+
 
 También los números naturales son representables con un tipo cerrado:
 
@@ -478,11 +510,18 @@ closed Vect : Nat -> Type -> Type with
     _<::>_ : forall t:Type, n:Nat . t -> Vect n t -> Vect (S n) t
 ```
 
+El tipo `_->_` es un tipo cerrado embebido en el lenguaje.
+
+También `exists` es un tipo cerrado embebido en el lenguaje, se define de la siguiente forma:
+
+```haskell
+closed Exists : (select a:Type) -> (a -> Type) -> Type with
+    <*_;_*> : forall a:Type, P:a -> Type . (select x:a) -> P x -> Exists a P
+```
+
 ### Tipos abiertos
 
-Se comportan como los tipos cerrados, pero sirven para conjuntos cuya definición completa es desconocida (o infinita).
-
-> El tipo `Type` es un tipo abierto embebido en el lenguaje. Cada tipo nuevo se considera una _reapertura_ de éste.
+Se comportan como los tipos cerrados, pero sirven para conjuntos cuya definición completa es desconocida (o no acotada).
 
 #### Declaración de tipos abiertos
 
@@ -492,7 +531,7 @@ Al declarar un tipo abierto, puede no conocerse ningún constructor de éste, po
 open <iden> : <type> [ with
     <iden> : <type>
     [ <iden> : <type> ..]
-    ]
+  ]
 ```
 
 Un ejemplo de declaración donde conocemos algunos constructores de antemano es el de monedas:
@@ -535,13 +574,17 @@ reopen Command with
     Jump : Command
 ```
 
+El tipo `Type` es un tipo abierto embebido en el lenguaje. Cada tipo nuevo se considera una _reapertura_ de éste.
+
 ## Comportamientos
 
 Sirven para obtener un _estilo_ de sobrecarga de funciones, esto es, usar un mismo identificador para diferentes funciones (con tipos diferentes).
 
 ### Definición
 
-Se definen con un identificador, un _argumento_ con su tipo, las funciones que define y sus dependencias (en caso de existir).
+Se definen con un identificador, un _argumento_ con su tipo, las funciones que define y sus definiciones por defecto (en caso de existir).
+
+Las definiciones por defecto son definiciones que son derivables a partir de otras funciones, aunque siempre se puede indicar una implementación específica por parte del usuario.
 
 ```haskell
 behaviour <iden> on <iden> : <type> defines
@@ -564,6 +607,13 @@ behaviour Eq on t : Type defines
         a == b = not (a /= b)
 ```
 
+Otro ejemplo es el comportamientode las cosas que son _mapeables_:
+
+```haskell
+behaviour Functor on f : Type -> Type defines
+    fmap : forall a:Type, b:Type . (a -> b) -> f a -> f b
+```
+
 ### Instanciación
 
 Para definir que un tipo cumple con un comportamiento.
@@ -574,7 +624,7 @@ Para definir que un tipo cumple con un comportamiento.
     [ <iden> [ <arg> ..] = <expr> ..]
 ```
 
-Se lee «_tipo_ es un _comportamiento_, donde ...».
+Se lee «_tipo_ es un _comportamiento_, con ...».
 
 Las instancias de `Eq` para `Bool` y `Nat` serían:
 
@@ -588,6 +638,33 @@ Nat is Eq with
     Z == Z = True
     S n == S m = n == m
     _ == _ = False
+```
+
+Estas instancias nos abilitan, gracias a las definiciones por defecto, también el uso de la función `_/=_` para `Nat` y `Bool`.
+
+Pero podríamos dar nuestra propia implementación:
+
+```haskell
+Bool is Eq with
+    True == True = True
+    False == False = True
+    _ == _ = False
+
+    True /= False = True
+    False /= True = True
+    _ /= _ False
+```
+
+Y las instancias de `Functor` para `Maybe` y `List` serían:
+
+```haskell
+Maybe is Functor with
+    fmap _ Nothing = Nothing
+    fmap f (Just x) = Just (f x)
+
+List is Functor with
+    fmap _ Nil = Nil
+    fmap f (x :: xs) = f x :: fmap f xs
 ```
 
 ### Requerimiento
@@ -622,36 +699,56 @@ Podríamos querer hacer varias instancias de un comportamiento para el mismo tip
 
 #### Definición de alcances de comportamientos abiertos
 
-Simplemente se le asigna un nombre.
+La definción de alcances de comportamientos abiertos puede ser simplemente la definción de un identificador para éste, o puede incluir instancias iniciales.
 
 ```haskell
-scope <iden>
+open scope <iden> [with
+
+    <iden> is <iden> with
+        <iden> [ <arg> ..] = <expr>
+        [ <iden> [ <arg> ..] = <expr> ..]
+
+    [ <iden> is <iden> with
+        <iden> [ <arg> ..] = <expr>
+        [ <iden> [ <arg> ..] = <expr> ..]
+    ..]
+  ]
 ```
 
-Si se quiere que una instancia forme parte de un alcance abierto específico, se indica usando la palabra reservada `at`:
+En cualquier parte posterior del código, se puede _reabrir_ un alcance de comportamientos abierto y agregar instancias a éste.
 
 ```haskell
-<iden> is <iden> at <iden> with
-    <iden> [ <arg> ..] = <expr>
-    [ <iden> [ <arg> ..] = <expr> ..]
+reopen scope <iden> with
+
+    <iden> is <iden> with
+        <iden> [ <arg> ..] = <expr>
+        [ <iden> [ <arg> ..] = <expr> ..]
+
+    [ <iden> is <iden> with
+        <iden> [ <arg> ..] = <expr>
+        [ <iden> [ <arg> ..] = <expr> ..]
+    ..]
+
 ```
 
-Por ejemplo, haremos alcances para las distintas instancias de `Semigroup` que puede tener `Bool`.
+Por ejemplo, haremos alcances abiertos para las distintas instancias de `Semigroup` y `Monoid` que puede tener `Bool`.
 
 ```haskell
-scope All
-scope Any
+open scope Any
 
-Bool is Semigroup at All with
-    _<+>_ = _&&_
-Bool is Semigroup at Any with
-    _<+>_ = _||_
+open scope All with
+    Bool is Semigroup with
+        _<+>_ = _&&_
 
-Bool is Monoid at All with
-    neutral = True
-Bool is Monoid at Any with
-    neutral = False
+reopen scope Any with
+    Bool is Semigroup with
+        _<+>_ = _||_
+    Bool is Monoid with
+        neutral = False
 
+reopen scope All with
+    Bool is Monoid with
+        neutral = True
 ```
 
 #### Definición de alcances de comportamientos cerrados
@@ -659,7 +756,7 @@ Bool is Monoid at Any with
 Se asigna un nombre al alcance y se definen todas sus instancias inmediatamente.
 
 ```haskell
-scope <iden> with
+closed scope <iden> with
 
     <iden> is <iden> with
         <iden> [ <arg> ..] = <expr>
@@ -674,14 +771,14 @@ scope <iden> with
 Por ejemplo, haremos alcances para las distintas instancias de `Semigroup` que puede tener `Bool`.
 
 ```haskell
-scope All with
+closed scope All with
     Bool is Semigroup with
         _<+>_ = _&&_
 
     Bool is Monoid with
         neutral = True
 
-scope Any with
+closed scope Any with
     Bool is Semigroup with
         _<+>_ = _||_
 
@@ -706,6 +803,9 @@ isNeutral x = x == neutral
 isNeutral True          -- error: no Monoid instance
 isNeutral True at All   -- True
 isNeutral True at Any   -- False
+
+-- (isNeutral at All) True at Any           -- False? True?
+-- ((isNeutral at All) True at Any) at All  -- False? True?
 ```
 
 ## Modo de pruebas
@@ -715,6 +815,27 @@ ___TO DO___
 ## Azúcar Sintáctica
 
 Hay ciertas construcciones en el lenguaje a las que se les podría dar una sintaxis especial para facilitar su escritura, esto lo llamamos _azúcar sintáctica_.
+
+### Cuantificador existencial
+
+El cuantificador existencial esta definido en Angler, pero su presentación habitual se hace con azúcar sintáctica, aquí presentamos ésta y su transformación:
+
+```haskell
+closed Exists : (select a:Type) -> (a -> Type) -> Type with¬
+    <*_;_*> : forall a:Type, P:a -> Type . (select x:a) -> P x -> Exists a P
+```
+
+Así se haría uso de su definición:
+
+```haskell
+vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> Exists Nat (\m -> Vect m a)
+```
+
+Mientras que la azúcar sintáctica introduce el identificador (i.e. `m`) automáticamente:
+
+```haskell
+vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat ; Vect m a
+```
 
 ### Listas
 
@@ -738,7 +859,7 @@ list = [ 0 :: 1 :: 2 ]
 
 ### Cadenas de caracteres
 
-La versión _azucarada_ de cadenas de caracteres (`String`) serían todos los caracteres seguidos entre dos comillas doblres (`"`).
+La versión _azucarada_ de cadenas de caracteres (`String`) serían todos los caracteres seguidos entre dos comillas dobles (`"`).
 
 ```haskell
 String : Type
