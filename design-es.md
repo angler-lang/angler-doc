@@ -816,6 +816,22 @@ ___TO DO___
 
 Hay ciertas construcciones en el lenguaje a las que se les podría dar una sintaxis especial para facilitar su escritura, esto lo llamamos _azúcar sintáctica_.
 
+### Números naturales
+
+Los números naturales están representados en Angler con el siguiente tipo:
+
+```haskell
+closed Nat : Type with
+    Z : Nat             -- zero
+    S : Nat -> Nat      -- succesor
+```
+
+Pero escribir números grandes con esta notación no es práctico, por lo que un número _literal_ es _desazucarado_ a ésta.
+
+```haskell
+5   -- S (S (S (S (S Z))))
+```
+
 ### Cuantificador existencial
 
 El cuantificador existencial esta definido en Angler, pero su presentación habitual se hace con azúcar sintáctica, aquí presentamos ésta y su transformación:
