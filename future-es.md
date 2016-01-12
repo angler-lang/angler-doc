@@ -18,3 +18,7 @@ Este archivo almacenará ideas que se nos ocurran y capaz valga la pena implemen
     + (capaz lo mismo para `exists`)
 - Para funciones mutualmente recursivas: [idris tutorial](http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html#note-declaration-order-and-mutual-blocks)
 - Las instancias de comportamientos pueden generar funciones `__<type>__<behaviour>__<scope>`, ya que dos `_` seguidos están prohíbidos para identificadores.
+
+## A discutir
+
+- ¿Deberíamos realmente tener alcances cerrados y abiertos?
