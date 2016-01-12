@@ -414,6 +414,84 @@ ListToVect Nil = VNil
 ListToVect (x :: xs) = x <::> ListToVect xs
 ```
 
+## Construcciones
+
+Una expresión en Angler puede tener algunas construciones especiales. Debe considerarse dónde es adecuado usar cada una de las construcciones y apegarse a un estilo de programación.
+
+### `case-of`
+
+Una expresión `case-of` sirve para hacer pattern matching sobre un valor.
+
+```haskell
+case <expr> : <type> of
+    <arg> = <expr>
+    [ <arg> = <expr> ..]
+```
+
+Por ejemplo, la función que filtra elementos de una lista puede ser escrita con un `case-of` en vez de varias definiciones de función:
+
+```haskell
+filter : forall t:Type . (t -> Bool) -> List t -> List t
+filter g ls = case ls : forall t:Type . List t of
+    Nil       = Nil
+    (x :: xs) = if g x then x :: filter g xs else filter g xs
+```
+
+Otro ejemplo es la función que filtra elementos de un vector:
+
+```haskell
+vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat ; Vect m t
+vfilter _ VNil = VNil
+vfilter g (x <::> xs) = case vfilter g xs : forall t:Type . exists m:Nat ; Vect m t of
+    <* nt ; rest *> = if g x
+        then <* S nt ; x <::> rest *>
+        else <* nt   ; rest        *>
+```
+
+En este caso se usó el `case-of` para poder hacer pattern matching del resultado de la aplicación recursiva de la función.
+
+### `let-in`
+
+Una expresión `let-in` sirve para declarar un alcance de definiciones nuevas sólo disponibles en una expresión en específico.
+
+```haskell
+let
+    <def>
+    [ <def> ..]
+in <expr>
+```
+
+Por ejemplo, si queremos evitar la repetición de código en la función que filtra elementos de una lista:
+
+```haskell
+filter : forall t:Type . (t -> Bool) -> List t -> List t
+filter _ Nil = Nil
+filter g (x :: xs) = let rest : forall t:Type . List t
+                         rest = filter g xs
+                     in if g x then x :: rest else rest
+```
+
+### `where`
+
+Un `where` sólo se puede escribir al final de una expresión, sirve para declarar un alcance de definiciones nuevas sólo disponibles en esta expresión en específico.
+
+```haskell
+<expr> where
+    <def>
+    [ <def> ..]
+```
+
+Por ejemplo, se puede escribir la misma función de filtrar elementos de una lista de manera muy similar que con el `let-in`:
+
+```haskell
+filter : forall t:Type . (t -> Bool) -> List t -> List t
+filter _ Nil = Nil
+filter g (x :: xs) = if g x then x :: rest else rest
+    where
+        rest : forall t:Type . List t
+        rest = filter g xs
+```
+
 ## Operadores
 
 Los operadores sirven para usar ciertas funciones de manera _natural_; se definen con una asociatividad y precedencia, el identificador indica dónde espera los argumentos usando el caracter piso (`_`).
