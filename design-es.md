@@ -90,6 +90,7 @@ Los siguientes elementos están embebidos en el lenguaje:
     - El constructor de este tipo sería las lambda-funciones `\x -> e`.
 - `Exists`: El tipo existencial, sirve para construir un valor que depende de otro valor de un tipo dado.
 - `<*_;_*>`: El constructor de tipo existencial, devuelve el valor y la construcción lograda con éste.
+- `error`: Una función para reportar errores.
 
 ## Módulo
 
@@ -252,6 +253,14 @@ Se hará un análisis por cada definición:
     + __Primer argumento `f`__: Se usa el identificador `f` para denotar la función de modificación.
     + __Segundo argumento `x :: xs`__: Se usa pattern matching para reconocer una lista de uno o más elementos, introduciendo los identificadores `x` y `xs` como _cabeza_ y _cola_ de la lista, respectivamente.
 
+Si se desea escribir una función que no contempla todos los casos posibles, se puede utilizar la función embebida `error : forall a:Type . String -> a`:
+
+```haskell
+head : forall t:Type . List t -> t
+head (x :: _) = x
+head Nil = error "no head in Nil"
+```
+
 ### Lambda funciones
 
 Son funciones que no tienen un identificador asociado a ellas.
@@ -350,7 +359,13 @@ Este cuantificador es el único que puede recibir una aplicación implícita, ya
 <expr> { <iden> = <expr> }
 ```
 
-Un ejemplo sería utilizarlo para reducir el dominio de una función:
+Un ejemplo sería, utilizarlo para reducir el dominio de una función:
+
+```haskell
+head {t = Nat} : List Nat -> Nat
+```
+
+Otro ejemplo del mismo uso:
 
 ```haskell
 map {b = Bool} : forall a:Type . (a -> Bool) -> List a -> List Bool
