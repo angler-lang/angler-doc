@@ -994,3 +994,12 @@ Se convierte en:
 ```haskell
 act0 >>= \x -> act1 x >> act2 >>= \y -> act3 y x
 ```
+
+## REPL
+
+El REPL es la sesión interactiva donde el usuario puede evaluar expresiones.
+#TODO
+
+## Función principal
+
+#TODO
