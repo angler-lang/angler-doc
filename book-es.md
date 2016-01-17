@@ -12,7 +12,7 @@ Qué sucedió para llegar al resultado final.
 
 ## Investigación
 
-## Diseño
+## Diseño e implementación
 
 **NOTA**: Se usarán algunos ejemplos de tipos básicos para hacer obvia la evolución.
 
@@ -21,6 +21,22 @@ Comenzamos con algunas ideas básicas de qué buscabamos en el diseño de este l
 - con una definción compacta
 - explícito
 - para principiantes
+- con tipos dependientes
+
+### Expresiones, tipos y sus construcciones
+
+Ya que el lenguaje debe tener tipos dependientes, se decidió desde un principio que un tipo es sencillamente una expresión, no un elemento especial del lenguaje, hace que en cualquier parte donde se espera un tipo, debería poder escribirse cualquier expresión, mientras que el chequeo de tipos pase sin errores.
+
+Al hacer estos dos elementos uno solo, se definieron las diferentes construcciones posibles de expresiones.
+
+- Aplicación de funciones
+- Parentización
+- Lambda funciones
+- Pattern matching
+- Alcance de declaraciones para una expresión (`where`, `let-in`)
+- Cuantificadores universales y existenciales de tipos
+
+### Tipos y funciones, ¿cerrados o abiertos?
 
 Nos preguntamos porqué se ha hecho una diferencia tan clara en otros lenguajes de programación funcionales entre lo que es una función, un tipo y un constructor de tipo, así que comenzamos con la idea de que todos éstos fueran declarados de la misma manera.
 
@@ -71,7 +87,7 @@ Aquí agregamos un nuevo constructor a el tipo `Bool` y aunque tenga sentido usa
 Así que se nos ocurrieron los tipos cerrados, éstos son tipos cuyos constructores son listados inmediatamente en un alcance nuevo, y no se le puede agregar más constructores.
 
 ```haskell
-Bool : Type  where
+Bool : Type where
     True : Bool
     False : Bool
 
@@ -82,7 +98,16 @@ not False = True
 
 Y ahora ninguno de las confusiones anteriores suedería, al declarar el `IDK` no habría problema, pero al llamar `not IDK`, el intepretador reportaría un error estático.
 
-Pero parecía interensante la idea de tipos que sus constructores pudieran ser agregados mientras se fueran necesitando, viene en mente un ejemplo de monedas en el mundo con algunas monedas _base_, para que el usuario agregue las de interés.
+Luego al ver `where` puede ser utilizado al final de cualquier expresión, por lo que no era una palabra que pudieramos utilizar para introducir los constructores, así que optamos por la palabra `with`. También el cambio muestra la diferencia semántica entre `where` y `with`, con el `where` se introduce un alcance sólo disponible en la expresión de éste, mientras que el `with` introduce elementos en el alcance exterior a éste.
+
+```haskell
+Bool : t where t = Type
+    with
+        True : b where b = Bool
+        False : b where b = Bool
+```
+
+Pero parecía interensante la idea de tipos que sus constructores pudieran ser agregados mientras se fueran necesitando, viene en mente un ejemplo de monedas del mundo con tan solo algunas monedas _base_, para que el usuario agregue las de interés.
 
 ```haskell
 Currency : Type
@@ -109,7 +134,7 @@ not : Bool -> Bool where
 
 Pero los tipos abiertos seguían sufriendo de los problemas presentados al principio, habría que hacer una diferencia más explícita entre tipos y funciones.
 
-Los tipos, abiertos y cerrados, deben indicar explícitamente cuáles son sus constructores de tipos para evitar el problema antes mencionado, de forma que lleagamos a la siguiente sintaxis:
+Los tipos, abiertos y cerrados, deben indicar explícitamente cuáles son sus constructores de tipos para evitar el problema antes mencionado, de forma que llegamos a la siguiente sintaxis:
 
 ```haskell
 closed Bool : Type with
@@ -140,7 +165,29 @@ reopen Currency with
 toUSD (XBT n) = USD (n * 400)
 ```
 
-Y dejamos de un lado la idea de funciones cerradas.
+Además todo este análisis nos hizo darnos cuenta de que aunque los tipos, constructores de tipos y funciones compartan muchas cualidades, no son lo mismo, se diferencian semánticamente y ésto debería mostrarse en su definición también.
+
+Haciendo finalmente claras las diferencias, dejamos de un lado la idea de funciones cerradas; aunque éstas pueden ser teóricamente interesantes, no conseguimos gran utilidad práctica, ya que de querer _cerrar_ una función abierta, simplemente se deben escribir todos los casos posibles de sus argumentos.
+
+```haskell
+isUSD : Currency -> Bool
+isUSD (USD _) = True
+isUSD _ = False         -- closes the function
+
+-- ...
+
+isUSD (XBT _) = True    -- will never run
+```
+
+### Identificadores, ¿mayúsculas o minúsculas?
+
+En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que las funciones y argumentos con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
+
+Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, #TODO
+
+### Parámetros implícitos
+
+### Comportamientos
 
 ## Implementación
 
