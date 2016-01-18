@@ -185,7 +185,47 @@ En un principio se consideró usar la convención de Haskell, que los constructo
 
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, #TODO
 
-### Parámetros implícitos
+### Cuantificadores: parámetros y argumentos implícitos
+
+Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente introducido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte _implícita_ y la parte _explícita_:
+
+```haskell
+const : { (a : Type) -> (b : Type) } -> a -> b -> a
+```
+
+Donde se escribe la parte implícita entre llaves (`{` y `}`) como un tipo más, y luego se escribe la parte explícita, donde todos los nombres introducidos en la parte implícita están disponibles.
+
+Luego, los argumentos implícitos se pasan a la función al comenzar su nombre con un caracter _piso_ (`_`):
+
+```haskell
+const _Bool : { (b : Type) } -> Bool -> b -> Bool
+```
+
+Esta manera de pasar argumentos implícitos nos da una restricción en los identificadores que se puedene escribir en el lenguaje, ya que ninguno podría comenzar con piso.
+
+Pero hay otro problema con la propuesta anterior, recordemos que en la teoría de tipos dependientes tenemos cuantificadores universales y existenciales; en un cuantificador universal no importa el orden de las variables declaradas, se puede especificar un valor para cualquera de las variables disponibles, es decir, los parámetros implícitos deberían ser todos accesibles para el pasaje de argumentos implícitos. Así llegamos a otra propuesta que separa completamente las firmas de los cuantificadores:
+
+```haskell
+const : forall a:Type, b:Type . a -> b -> a
+```
+
+Ahora la definición se asemeja mucho más a un cuantificador, haciendo más explícito su uso, y además podemos acceder a todas las variables declaradas y especificarlas de la siguiente forma:
+
+```haskell
+const { b = Char } : forall a:Type . a -> Char -> a
+```
+
+Donde accedimos a la segunda variable declarada. Como pueden ver, no abandonamos por completo la idea de usar llaves (`{` y `}`) para parámetros implícitos, ahora se usa para los argumentos.
+
+Se consideró usar la palabra `product` en vez de `forall`, pero se decidió usar `forall` para que hubiera una referencia directa a lógica simbólica, aunque estos se consideren los tipos producto.
+
+De igual forma, se definen los tipos existenciales con la palabra `exists`, aunque se consideró la palabra `sum`:
+
+```haskell
+vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat ; Vect m t
+```
+
+Logrando una estructura parecida entre los cuantificadores universales y existenciales.
 
 ### Comportamientos
 
