@@ -222,7 +222,7 @@ Se consideró usar la palabra `product` en vez de `forall`, pero se decidió usa
 De igual forma, se definen los tipos existenciales con la palabra `exists`, aunque se consideró la palabra `sum`:
 
 ```haskell
-vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat ; Vect m t
+vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect m t
 ```
 
 Logrando una estructura parecida entre los cuantificadores universales y existenciales.

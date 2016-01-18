@@ -376,7 +376,7 @@ map {b = Bool} : forall a:Type . (a -> Bool) -> List a -> List Bool
 Para asociar identificadores a un valor específico de un tipo dado, como testigo.
 
 ```haskell
-exists <iden> : <type> ; <expr>
+exists <iden> : <type> . <expr>
 ```
 
 Ésto introduce el identificador mencionado y con el tipo indicado, pero retorna una _tupla_ con el valor calculado y el valor encontrado para el existencial.
@@ -384,7 +384,7 @@ exists <iden> : <type> ; <expr>
 Un ejemplo es la función para filtrar elementos de un vector:
 
 ```haskell
-vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat ; Vect m a
+vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat . Vect m a
 vfilter _ VNil = VNil
 vfilter g (x <::> xs) = if g x then <* S l ; x <::> xs' *> else <* l ; xs' *>
     where
@@ -394,7 +394,7 @@ vfilter g (x <::> xs) = if g x then <* S l ; x <::> xs' *> else <* l ; xs' *>
 Se utiliza la función recién definida en el siguiente ejemplo:
 
 ```haskell
-vfilter even (2 <::> 1 <::> 4 <::> VNil) : exists m:Nat ; Vect m Nat
+vfilter even (2 <::> 1 <::> 4 <::> VNil) : exists m:Nat . Vect m Nat
 ```
 Que es igual a:
 
@@ -455,9 +455,9 @@ filter g ls = case ls : forall t:Type . List t of
 Otro ejemplo es la función que filtra elementos de un vector:
 
 ```haskell
-vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat ; Vect m t
+vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect m t
 vfilter _ VNil = VNil
-vfilter g (x <::> xs) = case vfilter g xs : forall t:Type . exists m:Nat ; Vect m t of
+vfilter g (x <::> xs) = case vfilter g xs : forall t:Type . exists m:Nat . Vect m t of
     <* nt ; rest *> = if g x
         then <* S nt ; x <::> rest *>
         else <* nt   ; rest        *>
@@ -943,7 +943,7 @@ vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> Exists Nat (\m -> Ve
 Mientras que la azúcar sintáctica introduce el identificador (i.e. `m`) automáticamente:
 
 ```haskell
-vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat ; Vect m a
+vfilter : forall a:Type, n:Nat . (a -> Bool) -> Vect n a -> exists m:Nat . Vect m a
 ```
 
 ### Listas
