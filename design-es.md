@@ -901,9 +901,7 @@ isNeutral True at Any   -- False
 -- ((isNeutral at All) True at Any) at All  -- False? True?
 ```
 
-## Modo de pruebas
-
-___TO DO___
+## Modo de pruebas #TODO
 
 ## Azúcar Sintáctica
 
@@ -995,11 +993,8 @@ Se convierte en:
 act0 >>= \x -> act1 x >> act2 >>= \y -> act3 y x
 ```
 
-## REPL
+## REPL #TODO
 
 El REPL es la sesión interactiva donde el usuario puede evaluar expresiones.
-#TODO
 
-## Función principal
-
-#TODO
+## Función principal #TODO
