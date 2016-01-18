@@ -12,7 +12,7 @@ Angler es un lenguaje de programación funcional con un sistema de tipos dependi
     + `operator <iden>`
 - `<expr>`: para una expresión.
 - `<type>`: para una expresión que debe ser de tipo `Type`.
-- `<arg>`: para argumentos.
+- `<parm>`: para parámetros.
     + `_` (_don't care_)
     + `<iden>`
     + `<expr>`
@@ -205,16 +205,16 @@ Esto declara el tipo que debe tener la función a ser definida.
 
 ### Definición de funciones
 
-Una definición de función consta de su identificador, seguido por sus argumentos y la expresión que la _define_, separados por `=`.
+Una definición de función consta de su identificador, seguido por sus parámetros y la expresión que la _define_, separados por `=`.
 
 ```haskell
-<iden> [ <arg> ..] = <expr>
+<iden> [ <parm> ..] = <expr>
 ```
 
 En el ejemplo de la función identidad, la definición es la línea `id x = x`; donde se separa en la siguientes partes:
 
-- __`id x`__` = x`: el identificador (`id`) y su único argumento `x`.
-- `id x`__` = `__`x`: el `=` que separa la expresión que la define de sus argumentos.
+- __`id x`__` = x`: el identificador (`id`) y su único parámetro `x`.
+- `id x`__` = `__`x`: el `=` que separa la expresión que la define de sus parámetros.
 - `id x = `__`x`__: la expresión que define a la función.
 
 La función de composición puede tener la siguente definición:
@@ -223,7 +223,7 @@ La función de composición puede tener la siguente definición:
 _._ f g x = f (g x)
 ```
 
-Aquí tenemos el identificador `_._`, tres argumentos `f`, `g` y `x`, y la expresión `f (g x)`.
+Aquí tenemos el identificador `_._`, tres parámetros `f`, `g` y `x`, y la expresión `f (g x)`.
 
 Si definimos un operador para `_._` (`operator _._ infixR 9`), podríamos definir la función composición de la siguiente manera:
 
@@ -231,11 +231,11 @@ Si definimos un operador para `_._` (`operator _._ infixR 9`), podríamos defini
 (f . g) x = f (g x)
 ```
 
-#### Argumentos
+#### Parámetros
 
-Los argumentos pueden ser un identificador, una expresión de _pattern matching_, o un caracter _piso_ (`_`) para indicar que no importa su valor.
+Los parámetros pueden ser un identificador, una expresión de _pattern matching_, o un caracter _piso_ (`_`) para indicar que no importa su valor.
 
-Al leer cada parte de un argumento, se busca en la tabla de símbolos del programa; si no se encuentra en ésta, se agrega como identificador para la expresión de definición; si se encuentra, se usa para pattern matching.
+Al leer cada parte de un parámetro, se busca en la tabla de símbolos del programa; si no se encuentra en ésta, se agrega como identificador para la expresión de definición; si se encuentra, se usa para pattern matching.
 
 Ejemplo, la función para modificación de los elementos de una lista:
 
@@ -247,11 +247,11 @@ map f (x :: xs) = f x :: map f xs
 
 Se hará un análisis por cada definición:
 - __Primera definición `map _ Nil = ...`__
-    + __Primer argumento `_`__: Se usa piso `_` para ignorar la función de modificación.
-    + __Segundo argumento `Nil`__: Se usa pattern matching para reconocer una lista de cero elementos.
+    + __Primer parámetro `_`__: Se usa piso `_` para ignorar la función de modificación.
+    + __Segundo parámetro `Nil`__: Se usa pattern matching para reconocer una lista de cero elementos.
 - __Segunda definición `map f (x :: xs) = ...`__
-    + __Primer argumento `f`__: Se usa el identificador `f` para denotar la función de modificación.
-    + __Segundo argumento `x :: xs`__: Se usa pattern matching para reconocer una lista de uno o más elementos, introduciendo los identificadores `x` y `xs` como _cabeza_ y _cola_ de la lista, respectivamente.
+    + __Primer parámetro `f`__: Se usa el identificador `f` para denotar la función de modificación.
+    + __Segundo parámetro `x :: xs`__: Se usa pattern matching para reconocer una lista de uno o más elementos, introduciendo los identificadores `x` y `xs` como _cabeza_ y _cola_ de la lista, respectivamente.
 
 Si se desea escribir una función que no contempla todos los casos posibles, se puede utilizar la función embebida `error : forall a:Type . String -> a`:
 
@@ -266,7 +266,7 @@ head Nil = error "no head in Nil"
 Son funciones que no tienen un identificador asociado a ellas.
 
 ```haskell
-\ <arg> [ <arg> ..] -> <expr>
+\ <parm> [ <parm> ..] -> <expr>
 ```
 
 Algunos ejemplos:
@@ -439,8 +439,8 @@ Una expresión `case-of` sirve para hacer pattern matching sobre un valor.
 
 ```haskell
 case <expr> : <type> of
-    <arg> = <expr>
-    [ <arg> = <expr> ..]
+    <parm> = <expr>
+    [ <parm> = <expr> ..]
 ```
 
 Por ejemplo, la función que filtra elementos de una lista puede ser escrita con un `case-of` en vez de varias definiciones de función:
@@ -509,7 +509,7 @@ filter g (x :: xs) = if g x then x :: rest else rest
 
 ## Operadores
 
-Los operadores sirven para usar ciertas funciones de manera _natural_; se definen con una asociatividad y precedencia, el identificador indica dónde espera los argumentos usando el caracter piso (`_`).
+Los operadores sirven para usar ciertas funciones de manera _natural_; se definen con una asociatividad y precedencia, el identificador indica dónde deben estar los argumentos usando el caracter piso (`_`).
 
 ```haskell
 operator <iden> <fixity> <prec>
@@ -675,7 +675,7 @@ Sirven para obtener un _estilo_ de sobrecarga de funciones, esto es, usar un mis
 
 ### Definición
 
-Se definen con un identificador, un _argumento_ con su tipo, las funciones que define y sus definiciones por defecto (en caso de existir).
+Se definen con un identificador, un _parámetro_ con su tipo, las funciones que define y sus definiciones por defecto (en caso de existir).
 
 Las definiciones por defecto son definiciones que son derivables a partir de otras funciones, aunque siempre se puede indicar una implementación específica por parte del usuario.
 
@@ -684,8 +684,8 @@ behaviour <iden> on <iden> : <type> defines
         <iden> : <type>
         [ <iden> : <type> ..]
     [ with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
     ]
 ```
 
@@ -713,8 +713,8 @@ Para definir que un tipo cumple con un comportamiento.
 
 ```haskell
 <iden> is <iden> with
-    <iden> [ <arg> ..] = <expr>
-    [ <iden> [ <arg> ..] = <expr> ..]
+    <iden> [ <parm> ..] = <expr>
+    [ <iden> [ <parm> ..] = <expr> ..]
 ```
 
 Se lee «_tipo_ es un _comportamiento_, con ...».
@@ -798,12 +798,12 @@ La definción de alcances de comportamientos abiertos puede ser simplemente la d
 open scope <iden> [with
 
     <iden> is <iden> with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
 
     [ <iden> is <iden> with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
     ..]
   ]
 ```
@@ -814,12 +814,12 @@ En cualquier parte posterior del código, se puede _reabrir_ un alcance de compo
 reopen scope <iden> with
 
     <iden> is <iden> with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
 
     [ <iden> is <iden> with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
     ..]
 
 ```
@@ -852,12 +852,12 @@ Se asigna un nombre al alcance y se definen todas sus instancias inmediatamente.
 closed scope <iden> with
 
     <iden> is <iden> with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
 
     [ <iden> is <iden> with
-        <iden> [ <arg> ..] = <expr>
-        [ <iden> [ <arg> ..] = <expr> ..]
+        <iden> [ <parm> ..] = <expr>
+        [ <iden> [ <parm> ..] = <expr> ..]
     ..]
 ```
 
