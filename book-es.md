@@ -231,6 +231,24 @@ vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect 
 
 Logrando una estructura parecida entre los cuantificadores universales y existenciales.
 
+### El _cuantificador_ de selección
+
+Luego nos dimos cuenta de que podemos querer introducir nombres para parámetros explícitos, es decir, lo que normalmente haríamos con un cuantificador universal, pero en vez de ser _para todo_ que sea para el valor dado. Esta idea se maneja en los lenguajes estudiados colocando una asociación de nombre directamente:
+
+```haskell
+id' : (t : Type) -> t -> t
+id' _ x = x
+```
+
+Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra `select` para hacer obvio que es un cuantificador.
+
+```haskell
+id' : (select t : Type) -> t -> t
+id' _ x = x
+```
+
+Además se lee como _"selecciona un **Type**, que llamaremos **t**"_.
+
 ### Identificadores: evitando confusiones
 
 Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como `+`, `*` y de más, pero al ser un lenguaje didáctico, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
