@@ -181,29 +181,29 @@ isUSD (XBT _) = True    -- will never run
 
 ### Identificadores, ¿mayúsculas o minúsculas?
 
-En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que las funciones y argumentos con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
+En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
 
-Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, #TODO
+Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, así que la distinción entre tipos y valores no es lógica en este caso.
 
 ### Cuantificadores: parámetros y argumentos implícitos
 
-Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente introducido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte _implícita_ y la parte _explícita_:
+Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente definido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte _implícita_, que es el cuantificador universal; y la parte _explícita_:
 
 ```haskell
 const : { (a : Type) -> (b : Type) } -> a -> b -> a
 ```
 
-Donde se escribe la parte implícita entre llaves (`{` y `}`) como un tipo más, y luego se escribe la parte explícita, donde todos los nombres introducidos en la parte implícita están disponibles.
+Donde se escribe la parte implícita entre llaves (`{` y `}`) como un tipo más, y luego se escribe la parte explícita, donde todos los nombres introducidos en la parte implícita están disponibles. Esto nos dejaba con dudas acerca de cómo se podían escribir con una estructura similar los tipos existenciales.
 
-Luego, los argumentos implícitos se pasan a la función al comenzar su nombre con un caracter _piso_ (`_`):
+Los argumentos implícitos se pasan a la función al comenzar su nombre con un caracter _piso_ (`_`):
 
 ```haskell
 const _Bool : { (b : Type) } -> Bool -> b -> Bool
 ```
 
-Esta manera de pasar argumentos implícitos nos da una restricción en los identificadores que se puedene escribir en el lenguaje, ya que ninguno podría comenzar con piso.
+Esta manera de pasar argumentos implícitos nos da una restricción en los identificadores que se puedene escribir en el lenguaje, ya que ninguno podría comenzar con piso para poder diferenciarlos de argumentos implícitos.
 
-Pero hay otro problema con la propuesta anterior, recordemos que en la teoría de tipos dependientes tenemos cuantificadores universales y existenciales; en un cuantificador universal no importa el orden de las variables declaradas, se puede especificar un valor para cualquera de las variables disponibles, es decir, los parámetros implícitos deberían ser todos accesibles para el pasaje de argumentos implícitos. Así llegamos a otra propuesta que separa completamente las firmas de los cuantificadores:
+Pero hay un problema con la propuesta anterior, recordemos que en la teoría de tipos dependientes tenemos cuantificadores universales y existenciales; en un cuantificador universal no importa el orden de las variables declaradas, se puede especificar un valor para cualquera de las variables disponibles, es decir, los parámetros implícitos deberían ser todos accesibles para el pasaje de argumentos implícitos. Así llegamos a otra propuesta que separa completamente las firmas de los cuantificadores:
 
 ```haskell
 const : forall a:Type, b:Type . a -> b -> a
