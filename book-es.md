@@ -231,6 +231,18 @@ vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect 
 
 Logrando una estructura parecida entre los cuantificadores universales y existenciales.
 
+### Identificadores: evitando confusiones
+
+Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como `+`, `*` y de más, pero al ser un lenguaje didáctico, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
+
+```haskell
+var         -- `var`
+x0          -- `x0`
+0x          -- `0` `x`
++           -- `+`
+a+2         -- `a` `+` `2`
+```
+
 ### Comportamientos
 
 ## Implementación
