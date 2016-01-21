@@ -255,10 +255,74 @@ Desde un principio se aceptó la idea de poder usar símbolos en los identificad
 
 ```haskell
 var         -- `var`
-x0          -- `x0`
-0x          -- `0` `x`
-+           -- `+`
-a+2         -- `a` `+` `2`
+v0          -- `v0`
+0v0         -- `0` `v0`
+++          -- `++`
+var++v0     -- `var` `++` `v0`
+```
+
+### No me importa, te lo digo en inglés, I _don't care_
+
+En una función puede haber casos en que un argumento no es importante para su valor resultante, a estos argumentos se les puede asignar un nombre que no usaremos, o indicar explícitamente que no es importante.
+
+```haskell
+const : forall t:Type, v:Type . t -> v -> t
+const x ? = x
+```
+
+Donde el caracter `?` indica que no importa ese valor, luego se decidió cambiar este caracter a `_`, ya que el signo de interrogación puede transmitir la idea de que __no sabemos__ qué será el argumento, cuando lo que se quiere transmitir es que __no importa__. Se eligió `_` porque es el caracter típicamente usado por otros lenguajes para lo miso, y visualmente, al llamar tan poco la atención transmite su poca importancia.
+
+```haskell
+const : forall t:Type, v:Type . t -> v -> t
+const x _ = x
+```
+
+### ¿Identificador o literal?
+
+Los caracteres literales suelen escribirse usando comillas simples (`'`), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único _símbolo_ que está en ambas categorías de identificadores.
+
+```haskell
+'a'     -- caracter
+a''     -- identificador
++'      -- identificador
+```
+
+### Operadores ahuecados
+
+Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy _empinada_, por lo que la posibilidad de definir operadores es escencial. Se propuso usar _operadores mixfijos_, estos funcionan para definir las __partes__ de un operador y sus __huecos__, que es donde irían sus operandos; para indicar los huecos de un operador, usaremos el caracter piso (`_`).
+
+```haskell
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if True then x else _ = x
+if False then _ else y = y
+```
+
+Un identificador con `_` puede usarse como operador, colocando los argumentos en los huecos, o como una función normal escribiendo el identificador con los `_` incluidos.
+
+```haskell
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if_then_else_ True  x _ = x
+if_then_else_ False _ y = y
+```
+
+### Definición de operadores
+
+En un principio se consideró que si un identificador tiene `_` se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, es una regla de _reordenamiento_ de identificadores.
+
+```haskell
+operator |_|                closed
+operator if_then_else_      prefix  0
+operator _==_               infixN  2
+operator _+_                infixL  4
+operator _*_                infixL  5
+operator _^_                infixR  6
+operator -_                 prefix  7
+operator _!                 postfix 8
+
+-- ...
+
+if | a * b + c | == d then e ! else - e
+-- if_then_else_ (_==_ (|_| (_+_ (_*_ a b) c)) d) (_! e) (-_ e)
 ```
 
 ### Comportamientos
