@@ -183,7 +183,7 @@ isUSD (XBT _) = True    -- will never run
 
 En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
 
-Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, así que la distinción entre tipos y valores no es lógica en este caso.
+Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el uso de tipos y valores no era conveniente.
 
 ### Cuantificadores: parámetros y argumentos implícitos
 
@@ -201,7 +201,7 @@ Los argumentos implícitos se pasan a la función al comenzar su nombre con un c
 compose _Bool : { (b : Type) -> (c : Type) } -> (b -> c) -> (Bool -> b) -> Bool -> c
 ```
 
-Esta manera de pasar argumentos implícitos nos da una restricción en los identificadores que se puedene escribir en el lenguaje, ya que ninguno podría comenzar con piso para poder diferenciarlos de argumentos implícitos.
+Con esta sintaxis los parámetros implícitos son __posicionales__, es decir, se pasan los argumentos con un orden específico. Esta manera de pasar argumentos implícitos nos da una restricción en los identificadores que se puedene escribir en el lenguaje, ya que ninguno podría comenzar con piso para poder diferenciarlos de argumentos implícitos.
 
 Pero hay un mayor problema con la propuesta anterior, recordemos que en la teoría de tipos dependientes tenemos cuantificadores universales y existenciales; en un cuantificador universal no importa el orden de las variables declaradas, se puede especificar un valor para cualquera de las variables disponibles, es decir, los parámetros implícitos deberían ser todos accesibles para el pasaje de argumentos implícitos. Así llegamos a otra propuesta que separa completamente la sintaxis de firmas y de cuantificadores:
 
@@ -214,6 +214,8 @@ Con esta nueva sintaxis podemos pasar argumentos implícitos en el orden que sea
 ```haskell
 compose { b = Nat, c = Bool } : { a:Type } (Nat -> Bool) -> (a -> Nat) -> a -> Bool
 ```
+
+Con esta nueva los parámetros implícitos son __nombrados__, es decir, se pasan los argumentos en el orden que nos convenga, sin importar su posición, y los parámetros explícitos se mantienen posicionales.
 
 Finalemente decidimos hacer un último cambio a esta sintaxis para hacer obvio que se trata de un cuantificador:
 
@@ -229,7 +231,7 @@ Se consideró usar la palabra `product` en vez de `forall`, pero se decidió ir 
 vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect m t
 ```
 
-Logrando una estructura parecida entre los cuantificadores universales y existenciales.
+Logrando una estructura parecida entre los cuantificadores universales y existenciales. El cuantificador existencial __no__ puede recibir argumentos implícitos. Esta sintaxis es _azúcar sintáctica_ para los cuantificadores existenciales, ya que estos están definidos en el lenguaje.
 
 ### El _cuantificador_ de selección
 
@@ -240,7 +242,7 @@ id' : (t : Type) -> t -> t
 id' _ x = x
 ```
 
-Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra `select` para hacer obvio que es un cuantificador.
+Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra `select` para hacer obvio que se acerca al funcionamiento de los cuantificadores.
 
 ```haskell
 id' : (select t : Type) -> t -> t
@@ -251,7 +253,7 @@ Además se lee como _«selecciona un **Type**, que llamaremos **t**»_.
 
 ### Identificadores: evitando confusiones
 
-Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como `+`, `*` y de más, pero al ser un lenguaje didáctico, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
+Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como `+`, `*` y demás, pero para facilitar el uso del lenguaje, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
 
 ```haskell
 var         -- `var`
@@ -277,9 +279,9 @@ const : forall t:Type, v:Type . t -> v -> t
 const x _ = x
 ```
 
-### ¿Identificador o literal?
+### ¿Identificador o caracter?
 
-Los caracteres literales suelen escribirse usando comillas simples (`'`), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único _símbolo_ que está en ambas categorías de identificadores.
+Los caracteres literales suelen escribirse usando comillas simples (`'`), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único _símbolo_ que está en ambas categorías de identificadores, la de símbolos y la de letras.
 
 ```haskell
 'a'     -- caracter
@@ -293,9 +295,11 @@ Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy _empi
 
 ```haskell
 if_then_else_ : forall t:Type . Bool -> t -> t -> t
-if True then x else _ = x
+if True  then x else _ = x
 if False then _ else y = y
 ```
+
+Esto nos crea una restricción sobre los identificadores, estos no pueden contener dos `_` seguidos, ya que no sabríamos dónde termina un argumento y comienza el siguiente.
 
 Un identificador con `_` puede usarse como operador, colocando los argumentos en los huecos, o como una función normal escribiendo el identificador con los `_` incluidos.
 
@@ -305,9 +309,21 @@ if_then_else_ True  x _ = x
 if_then_else_ False _ y = y
 ```
 
+Nótese que se usa `_` tanto para _don't care_ como para los huecos de los identificadores, e.g. `if_then_else_ False _ y`.
+
+### Huecos entre identificadores
+
+Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un `_` de por medio.
+
+```haskell
+if_?_:_ : forall t:Type . Bool -> t -> t -> t
+if True  ? x : _ = x
+if False ? _ : y = y
+```
+
 ### Definición de operadores
 
-En un principio se consideró que si un identificador tiene `_` se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, es una regla de _reordenamiento_ de identificadores.
+En un principio se consideró que si un identificador tiene `_` se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, o está definido o no. Lo que se expresa es una regla de _reordenamiento_ de identificadores.
 
 ```haskell
 operator |_|                closed
