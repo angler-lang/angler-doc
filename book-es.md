@@ -103,8 +103,8 @@ Luego al ver `where` puede ser utilizado al final de cualquier expresión, por l
 ```haskell
 Bool : t where t = Type
     with
-        True : b where b = Bool
-        False : b where b = Bool
+        True : Bool
+        False : Bool
 ```
 
 Pero parecía interensante la idea de tipos que sus constructores pudieran ser agregados mientras se fueran necesitando, viene en mente un ejemplo de monedas del mundo con tan solo algunas monedas _base_, para que el usuario agregue las de interés.
@@ -247,7 +247,7 @@ id' : (select t : Type) -> t -> t
 id' _ x = x
 ```
 
-Además se lee como _"selecciona un **Type**, que llamaremos **t**"_.
+Además se lee como _«selecciona un **Type**, que llamaremos **t**»_.
 
 ### Identificadores: evitando confusiones
 
