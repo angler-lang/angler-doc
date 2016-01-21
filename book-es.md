@@ -8,11 +8,11 @@
 
 # Desarrollo
 
-Qué sucedió para llegar al resultado final.
+Investigación [verde]
+Diseño [azul]
+Implementación [rojo]
 
-## Investigación
-
-## Diseño e implementación
+*****
 
 **NOTA**: Se usarán algunos ejemplos de tipos básicos para hacer obvia la evolución.
 
@@ -23,7 +23,7 @@ Comenzamos con algunas ideas básicas de qué buscabamos en el diseño de este l
 - para principiantes
 - con tipos dependientes
 
-### Expresiones, tipos y sus construcciones
+## Expresiones, tipos y sus construcciones
 
 Ya que el lenguaje debe tener tipos dependientes, se decidió desde un principio que un tipo es sencillamente una expresión, no un elemento especial del lenguaje, hace que en cualquier parte donde se espera un tipo, debería poder escribirse cualquier expresión, mientras que el chequeo de tipos pase sin errores.
 
@@ -36,7 +36,7 @@ Al hacer estos dos elementos uno solo, se definieron las diferentes construccion
 - Alcance de declaraciones para una expresión (`where`, `let-in`)
 - Cuantificadores universales y existenciales de tipos
 
-### Tipos y funciones, ¿cerrados o abiertos?
+## Tipos y funciones, ¿cerrados o abiertos?
 
 Nos preguntamos porqué se ha hecho una diferencia tan clara en otros lenguajes de programación funcionales entre lo que es una función, un tipo y un constructor de tipo, así que comenzamos con la idea de que todos éstos fueran declarados de la misma manera.
 
@@ -179,13 +179,13 @@ isUSD _ = False         -- closes the function
 isUSD (XBT _) = True    -- will never run
 ```
 
-### Identificadores, ¿mayúsculas o minúsculas?
+## Identificadores, ¿mayúsculas o minúsculas?
 
 En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
 
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el uso de tipos y valores no era conveniente.
 
-### Cuantificadores: parámetros y argumentos implícitos
+## Cuantificadores: parámetros y argumentos implícitos
 
 Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente definido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte _implícita_, que es el cuantificador universal; y la parte _explícita_:
 
@@ -233,7 +233,7 @@ vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect 
 
 Logrando una estructura parecida entre los cuantificadores universales y existenciales. El cuantificador existencial __no__ puede recibir argumentos implícitos. Esta sintaxis es _azúcar sintáctica_ para los cuantificadores existenciales, ya que estos están definidos en el lenguaje.
 
-### El _cuantificador_ de selección
+## El _cuantificador_ de selección
 
 Luego nos dimos cuenta de que podemos querer introducir nombres para parámetros explícitos, es decir, lo que normalmente haríamos con un cuantificador universal, pero en vez de ser _para todo_ que sea para el valor dado. Esta idea se maneja en los lenguajes estudiados colocando una asociación de nombre directamente:
 
@@ -251,7 +251,7 @@ id' _ x = x
 
 Además se lee como _«selecciona un **Type**, que llamaremos **t**»_.
 
-### Identificadores: evitando confusiones
+## Identificadores: evitando confusiones
 
 Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como `+`, `*` y demás, pero para facilitar el uso del lenguaje, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
 
@@ -263,7 +263,7 @@ v0          -- `v0`
 var++v0     -- `var` `++` `v0`
 ```
 
-### No me importa, te lo digo en inglés, I _don't care_
+## No me importa, te lo digo en inglés, I _don't care_
 
 En una función puede haber casos en que un argumento no es importante para su valor resultante, a estos argumentos se les puede asignar un nombre que no usaremos, o indicar explícitamente que no es importante.
 
@@ -279,7 +279,7 @@ const : forall t:Type, v:Type . t -> v -> t
 const x _ = x
 ```
 
-### ¿Identificador o caracter?
+## ¿Identificador o caracter?
 
 Los caracteres literales suelen escribirse usando comillas simples (`'`), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único _símbolo_ que está en ambas categorías de identificadores, la de símbolos y la de letras.
 
@@ -289,7 +289,7 @@ a''     -- identificador
 +'      -- identificador
 ```
 
-### Operadores ahuecados
+## Operadores ahuecados
 
 Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy _empinada_, por lo que la posibilidad de definir operadores es escencial. Se propuso usar _operadores mixfijos_, estos funcionan para definir las __partes__ de un operador y sus __huecos__, que es donde irían sus operandos; para indicar los huecos de un operador, usaremos el caracter piso (`_`).
 
@@ -311,7 +311,7 @@ if_then_else_ False _ y = y
 
 Nótese que se usa `_` tanto para _don't care_ como para los huecos de los identificadores, e.g. `if_then_else_ False _ y`.
 
-### Huecos entre identificadores
+## Huecos entre identificadores
 
 Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un `_` de por medio.
 
@@ -321,7 +321,7 @@ if True  ? x : _ = x
 if False ? _ : y = y
 ```
 
-### Definición de operadores
+## Definición de operadores
 
 En un principio se consideró que si un identificador tiene `_` se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, o está definido o no. Lo que se expresa es una regla de _reordenamiento_ de identificadores.
 
@@ -341,21 +341,7 @@ if | a * b + c | == d then e ! else - e
 -- if_then_else_ (_==_ (|_| (_+_ (_*_ a b) c)) d) (_! e) (-_ e)
 ```
 
-### Comportamientos
-
-## Implementación
-
-### Etapas
-#### Lexer
-#### Parser
-#### Mixfix Parser
-#### Type-checking
-
-***********
-
-## Cuando ...
-
-***********
+## Comportamientos
 
 # Resultados
 
