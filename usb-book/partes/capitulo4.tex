@@ -4,4 +4,199 @@
 \label{capitulo4}
 \lhead{Capítulo 4. \emph{\chapterTitle}}
 
-\Blindtext
+\newenvironment{greenleft}
+  {\begin{leftframe}[linecolor=caribbeangreen]}
+  {\end{leftframe}}
+\newenvironment{blueleft}
+  {\begin{leftframe}[linecolor=cerulean]}
+  {\end{leftframe}}
+\newenvironment{redleft}
+  {\begin{leftframe}[linecolor=crimson]}
+  {\end{leftframe}}
+
+\begin{greenleft}
+    Investigación
+\end{greenleft}
+
+\begin{blueleft}
+    Diseño
+\end{blueleft}
+
+\begin{redleft}
+    Implementación
+\end{redleft}
+
+\section{Ideas iniciales}
+
+Se comenzó con algunas ideas que consideramos básicas para el lenguaje.
+
+\begin{itemize}
+    \item El lenguaje debe ser explícito, es decir, no se deben inferir las ideas presentadas en un programa.
+    \item La definición del lenguaje debe ser compacta.
+    \item El lenguaje debe ser amistoso para principiantes.
+    \item El sistema de tipos debe tener tipos dependientes.
+    \item Los alcances del lenguaje deben ser determinados por la indentación.
+\end{itemize}
+
+\section{Expresiones, tipos y sus constructores}
+
+\begin{blueleft}
+Ya que el lenguaje debe tener tipos dependientes, se decidió desde un principio que un tipo es sencillamente una expresión, no un elemento especial del lenguaje, hace que en cualquier parte donde se espera un tipo, debería poder escribirse cualquier expresión, mientras que el chequeo de tipos pase sin errores.
+
+Al hacer estos dos elementos uno solo, se definieron las diferentes construcciones posibles de expresiones.
+
+\begin{itemize}
+    \item Aplicación de funciones
+    \item Parentización
+    \item Lambda funciones
+    \item Pattern matching
+    \item Alcance de declaraciones para una expresión (\inlinecode{where}, \inlinecode{let-in})
+    \item Cuantificadores universales y existenciales de tipos
+\end{itemize}
+\end{blueleft}
+
+\section{Tipos y funciones, ¿abiertos o cerrados?}
+
+\begin{blueleft}
+Nos preguntamos porqué se ha hecho una diferencia tan clara en otros lenguajes de programación funcionales entre lo que es una función, un tipo y un constructor de tipo, así que comenzamos con la idea de que todos éstos fueran declarados de la misma manera.
+
+\begin{anglercode}
+Bool : Type
+True : Bool
+False : Bool
+
+not : Bool -> Bool
+not True = False
+not False = True
+\end{anglercode}
+
+Ésta alternativa hacía que la única diferencia entre una función y un tipo es que no tenga declaraciones asociadas, pero el siguiente ejemplo nos dejó preguntándonos qué debería suceder:
+
+\begin{anglercode}
+Bool : Type
+True : Bool
+False : Bool
+
+not : Bool -> Bool
+not True = False
+not False = True
+
+True = False
+\end{anglercode}
+
+¿Ahora \inlinecode{True} deja de ser algo sobre lo que se puede hacer pattern matching, como en la función \inlinecode{not}?; como podemos ver, da paso a que un programa deje de funcionar con tan solo una línea sospechosa.
+
+Otro ejemplo que da paso a problemas sería agregar un constructor a un tipo que no se debe:
+
+\begin{anglercode}
+Bool : Type
+True : Bool
+False : Bool
+
+not : Bool -> Bool
+not True = False
+not False = True
+
+IDK : Bool
+
+not IDK     -- ¿qué debería reportarse aquí?
+\end{anglercode}
+
+Aquí agregamos un nuevo constructor a el tipo \inlinecode{Bool} y aunque tenga sentido usarlo en la función \inlinecode{not}, pues espera algo del tipo \inlinecode{Bool}, el programa va a dar un error al correr, no al ser analizado por errores estáticos.
+
+Así que se nos ocurrieron los tipos cerrados, éstos son tipos cuyos constructores son listados inmediatamente en un alcance nuevo, y no se le puede agregar más constructores.
+
+\begin{anglercode}
+Bool : Type where
+    True : Bool
+    False : Bool
+
+not : Bool -> Bool
+not True = False
+not False = True
+\end{anglercode}
+
+Y ahora ninguno de las confusiones anteriores suedería, al declarar el \inlinecode{IDK} no habría problema, pero al llamar \inlinecode{not IDK}, el intepretador reportaría un error estático.
+
+Luego al ver \inlinecode{where} puede ser utilizado al final de cualquier expresión, por lo que no era una palabra que pudieramos utilizar para introducir los constructores, así que optamos por la palabra \inlinecode{with}. También el cambio muestra la diferencia semántica entre \inlinecode{where} y \inlinecode{with}, con el \inlinecode{where} se introduce un alcance sólo disponible en la expresión de éste, mientras que el \inlinecode{with} introduce elementos en el alcance exterior a éste.
+
+\begin{anglercode}
+Bool : t where t = Type
+    with
+        True : Bool
+        False : Bool
+\end{anglercode}
+
+Pero parecía interensante la idea de tipos que sus constructores pudieran ser agregados mientras se fueran necesitando, viene en mente un ejemplo de monedas del mundo con tan solo algunas monedas \textit{base}, para que el usuario agregue las de interés.
+
+\begin{anglercode}
+Currency : Type
+USD : Nat -> Currency
+EUR : Nat -> Currency
+
+toUSD : Currency -> Currency
+toUSD (USD n) = USD n
+toUSD (EUR n) = USD (n * 1.1)
+
+-- ...
+
+XBT : Nat -> Currency   -- bitcoin
+toUSD (XBT n) = USD (n * 400)
+\end{anglercode}
+
+Así que si tenemos tipos abiertos y cerrados, tendremos también funciones abiertas y cerradas; ya que estamos buscando enlazar lo más posible estos dos conceptos:
+
+\begin{anglercode}
+not : Bool -> Bool where
+    not True = False
+    not False = True
+\end{anglercode}
+
+Pero los tipos abiertos seguían sufriendo de los problemas presentados al principio, habría que hacer una diferencia más explícita entre tipos y funciones.
+
+Los tipos, abiertos y cerrados, deben indicar explícitamente cuáles son sus constructores de tipos para evitar el problema antes mencionado, de forma que llegamos a la siguiente sintaxis:
+
+\begin{anglercode}
+closed Bool : Type with
+    True : Bool
+    False : Bool
+
+not : Bool -> Bool
+not True = False
+not False = True
+
+closed Nat : Type with
+    Z : Nat             -- cero
+    S : Nat -> Nat      -- sucesor
+
+open Currency : Type with
+    USD : Nat -> Currency
+    EUR : Nat -> Currency
+
+toUSD : Currency -> Currency
+toUSD (USD n) = USD n
+toUSD (EUR n) = USD (n * 1.1)
+
+-- ...
+
+reopen Currency with
+    XBT : Nat -> Currency
+
+toUSD (XBT n) = USD (n * 400)
+\end{anglercode}
+
+Además todo este análisis nos hizo darnos cuenta de que aunque los tipos, constructores de tipos y funciones compartan muchas cualidades, no son lo mismo, se diferencian semánticamente y ésto debería mostrarse en su definición también.
+
+Haciendo finalmente claras las diferencias, dejamos de un lado la idea de funciones cerradas; aunque éstas pueden ser teóricamente interesantes, no conseguimos gran utilidad práctica, ya que de querer \textit{cerrar} una función abierta, simplemente se deben escribir todos los casos posibles de sus argumentos.
+
+\begin{anglercode}
+isUSD : Currency -> Bool
+isUSD (USD _) = True
+isUSD _ = False         -- *cierra* la función
+
+-- ...
+
+isUSD (XBT _) = True    -- este caso nunca correrá
+\end{anglercode}
+
+\end{blueleft}
