@@ -56,6 +56,22 @@
 \renewcommand{\tablename}{Tabla}
 \newcommand\listsymbolname{Acrónimos y Símbolos}
 
+% Para colocar un margen a la izquierda
+\newmdenv[hidealllines=true,leftline=true,linewidth=2pt]{leftframe}
+\definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
+\definecolor{cerulean}{rgb}{0.0, 0.48, 0.65}
+\definecolor{crimson}{rgb}{0.86, 0.08, 0.24}
+
+\newcommand{\inlinecode}{\texttt}
+\newenvironment{anglercode}
+    {\VerbatimEnvironment
+    \linespread{1}
+    \begin{Verbatim}[xleftmargin=1cm,xrightmargin=1cm,
+                     frame=single,framesep=2mm,
+                     rulecolor=\color{cerulean},
+                     fontsize=\footnotesize]}
+    {\end{Verbatim}}
+
 % Macros
 \newcommand{\projectTitle}{Angler}
 \newcommand{\authorName}{Matteo José Ferrando Briceño}
@@ -65,6 +81,7 @@
 \newcommand{\presentM}{Febrero\xspace}
 \newcommand{\presentY}{2016\xspace}
 
+\newcommand{\chapterTitle}{}
 
 \begin{titlepage}
     \title{\vspace{-2cm} \includegraphics[width=1.2in]{./usb.png} \\[.2cm]
@@ -98,12 +115,11 @@ Ingeniero de Computación}
 \addtocontents{toc}{\vspace{1em}}
 \blindtext
 
-\blindtext
-
 % Las palabras clave son generalmente los nombres de áreas de investigación a
 % los cuales está asociado el trabajo. Generalmente son tres o cuatro.
 \noindent \begin{small} \textbf{Palabras clave}: @palabra1, @palabra2, @palabra3.
 \end{small}
+}
 
 % Iniciar nueva página luego del resumen
 \clearpage
@@ -112,8 +128,6 @@ Ingeniero de Computación}
 % Agradecimientos
 \acknowledgements{
 \addtocontents{toc}{\vspace{1em}}
-\blindtext
-
 \blindtext
 }
 \clearpage
@@ -184,8 +198,8 @@ Ingeniero de Computación}
 % El número de capítulos varía. En mi libro fueron cuatro (sin contar
 % introducción y conclusión).
 \input{./partes/capitulo1}
-\input{./partes/capitulo2}
-\input{./partes/capitulo3}
+% \input{./partes/capitulo2}
+% \input{./partes/capitulo3}
 \input{./partes/capitulo4}
 
 \input{./partes/conclusiones}
