@@ -198,5 +198,181 @@ isUSD _ = False         -- *cierra* la función
 
 isUSD (XBT _) = True    -- este caso nunca correrá
 \end{anglercode}
-
 \end{blueleft}
+
+\section{Identificadores, ¿mayúscuas o minúsculas?}
+
+\begin{blueleft}
+En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
+
+Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente.
+\end{blueleft}
+
+\section{Cuantificadores: parámetros y argumentos implícitos}
+
+\begin{blueleft}
+Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente definido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte \emph{implícita}, que es el cuantificador universal; y la parte \emph{explícita}:
+
+\begin{anglercode}
+compose : { (a:Type) -> (b:Type) -> (c:Type) } -> (b -> c) -> (a -> b) -> a -> c
+\end{anglercode}
+
+Donde se escribe la parte implícita entre llaves (\inlinecode{\{} y \inlinecode{\}}) como un tipo más, y luego se escribe la parte explícita, donde todos los nombres introducidos en la parte implícita están disponibles. Esto nos dejaba con dudas acerca de cómo se podían escribir con una estructura similar los tipos existenciales.
+
+Los argumentos implícitos se pasan a la función al comenzar su nombre con un caracter \emph{piso} (\inlinecode{\_}):
+
+\begin{anglercode}
+compose _Bool : { (b : Type) -> (c : Type) } -> (b -> c) -> (Bool -> b) -> Bool -> c
+\end{anglercode}
+
+Con esta sintaxis los parámetros implícitos son \emph{posicionales}, es decir, se pasan los argumentos con un orden específico. Esta manera de pasar argumentos implícitos nos da una restricción en los identificadores que se puedene escribir en el lenguaje, ya que ninguno podría comenzar con piso para poder diferenciarlos de argumentos implícitos.
+
+Pero hay un mayor problema con la propuesta anterior, recordemos que en la teoría de tipos dependientes tenemos cuantificadores universales y existenciales; en un cuantificador universal no importa el orden de las variables declaradas, se puede especificar un valor para cualquera de las variables disponibles, es decir, los parámetros implícitos deberían ser todos accesibles para el pasaje de argumentos implícitos. Así llegamos a otra propuesta que separa completamente la sintaxis de firmas y de cuantificadores:
+
+\begin{anglercode}
+compose : { a:Type, b:Type, c:Type } (b -> c) -> (a -> b) -> a -> c
+\end{anglercode}
+
+Con esta nueva sintaxis podemos pasar argumentos implícitos en el orden que sea necesario:
+
+\begin{anglercode}
+compose { b = Nat, c = Bool } : { a:Type } (Nat -> Bool) -> (a -> Nat) -> a -> Bool
+\end{anglercode}
+
+Con esta nueva los parámetros implícitos son \emph{nombrados}, es decir, se pasan los argumentos en el orden que nos convenga, sin importar su posición, y los parámetros explícitos se mantienen posicionales.
+
+Finalemente decidimos hacer un último cambio a esta sintaxis para hacer obvio que se trata de un cuantificador:
+
+\begin{anglercode}
+compose : forall a:Type, b:Type, c:Type . (b -> c) -> (a -> b) -> a -> c
+\end{anglercode}
+
+Ahora la definición se asemeja mucho más a un cuantificador, haciendo más explícito su uso, y además podemos acceder a todas las variables declaradas y especificarlas.
+
+Se consideró usar la palabra \inlinecode{product} en vez de \inlinecode{forall}, pero se decidió ir por una referencia directa a lógica simbólica, aunque estos se consideren los tipos producto. De igual forma, se definen los tipos existenciales con la palabra \inlinecode{exists}, aunque se consideró la palabra \inlinecode{sum}:
+
+\begin{anglercode}
+vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect m t
+\end{anglercode}
+
+Logrando una estructura parecida entre los cuantificadores universales y existenciales. El cuantificador existencial \emph{no} puede recibir argumentos implícitos. Esta sintaxis es \emph{azúcar sintáctica} para los cuantificadores existenciales, ya que estos están definidos en el lenguaje.
+\end{blueleft}
+
+\section{El \emph{cuantificador} de selección}
+
+\begin{blueleft}
+Luego nos dimos cuenta de que podemos querer introducir nombres para parámetros explícitos, es decir, lo que normalmente haríamos con un cuantificador universal, pero en vez de ser \emph{para todo} que sea para el valor dado. Esta idea se maneja en los lenguajes estudiados colocando una asociación de nombre directamente:
+
+\begin{anglercode}
+id' : (t : Type) -> t -> t
+id' _ x = x
+\end{anglercode}
+
+Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra \inlinecode{select} para hacer obvio que se acerca al funcionamiento de los cuantificadores.
+
+Además se lee \emph{\guillemotleft selecciona un \inlinecode{Type}, que llamaremos \inlinecode{t}\guillemotright}.
+\end{blueleft}
+
+\section{Identificadores: evitando confusiones}
+
+\begin{blueleft}
+Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como \inlinecode{+}, \inlinecode{*} y demás, pero para facilitar el uso del lenguaje, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
+
+\begin{anglercode}
+var         -- var
+v0          -- v0
+0v0         -- 0 v0
+++          -- ++
+var++v0     -- var ++ v0
+\end{anglercode}
+\end{blueleft}
+
+\section{No me importa, te lo digo en inglés, I \emph{don't care}}
+
+\begin{blueleft}
+En una función puede haber casos en que un argumento no es importante para su valor resultante, a estos argumentos se les puede asignar un nombre que no usaremos, o indicar explícitamente que no es importante.
+
+\begin{anglercode}
+const : forall t:Type, v:Type . t -> v -> t
+const x ? = x
+\end{anglercode}
+
+Donde el caracter \inlinecode{?} indica que no importa ese valor, luego se decidió cambiar este caracter a \inlinecode{\_}, ya que el signo de interrogación puede transmitir la idea de que \emph{no sabemos} qué será el argumento, cuando lo que se quiere transmitir es que \emph{no importa}. Se eligió \inlinecode{\_} porque es el caracter típicamente usado por otros lenguajes para lo miso, y visualmente, al llamar tan poco la atención transmite su poca importancia.
+
+\begin{anglercode}
+const : forall t:Type, v:Type . t -> v -> t
+const x _ = x
+\end{anglercode}
+\end{blueleft}
+
+\section{¿Identificador o caracter?}
+
+\begin{blueleft}
+Los caracteres literales suelen escribirse usando comillas simples (\inlinecode{'}), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único \emph{símbolo} que está en ambas categorías de identificadores, la de símbolos y la de letras.
+
+\begin{anglercode}
+'a'     -- caracter
+a''     -- identificador
++'      -- identificador
+\end{anglercode}
+\end{blueleft}
+
+\section{Operadores ahuecados}
+
+\begin{blueleft}
+Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy \emph{empinada}, por lo que la posibilidad de definir operadores es escencial. Se propuso usar \emph{operadores mixfijos}, estos funcionan para definir las \emph{partes} de un operador y sus \emph{huecos}, que es donde irían sus operandos; para indicar los huecos de un operador, usaremos el caracter piso (\inlinecode{\_}).
+
+\begin{anglercode}
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if True  then x else _ = x
+if False then _ else y = y
+\end{anglercode}
+
+Esto nos crea una restricción sobre los identificadores, estos no pueden contener dos \inlinecode{\_} seguidos, ya que no sabríamos dónde termina un argumento y comienza el siguiente.
+
+Un identificador con \inlinecode{\_} puede usarse como operador, colocando los argumentos en los huecos, o como una función normal escribiendo el identificador con los \inlinecode{\_} incluidos.
+
+\begin{anglercode}
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if_then_else_ True  x _ = x
+if_then_else_ False _ y = y
+\end{anglercode}
+
+Nótese que se usa \inlinecode{\_} tanto para \emph{don't care} como para los huecos de los identificadores, e.g. \inlinecode{if\_then\_else\_ False \_ y}.
+\end{blueleft}
+
+\section{Huecos entre identificadores}
+
+\begin{blueleft}
+Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un \inlinecode{\_} de por medio.
+
+\begin{anglercode}
+if_?_:_ : forall t:Type . Bool -> t -> t -> t
+if True  ? x : _ = x
+if False ? _ : y = y
+\end{anglercode}
+\end{blueleft}
+
+\section{Definición de operadores}
+
+\begin{blueleft}
+En un principio se consideró que si un identificador tiene \inlinecode{\_} se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, o está definido o no. Lo que se expresa es una regla de \emph{reordenamiento} de identificadores.
+
+\begin{anglercode}
+operator |_|                closed
+operator if_then_else_      prefix  0
+operator _==_               infixN  2
+operator _+_                infixL  4
+operator _*_                infixL  5
+operator _^_                infixR  6
+operator -_                 prefix  7
+operator _!                 postfix 8
+
+-- ...
+
+if | a * b + c | == d then e ! else - e
+-- if_then_else_ (_==_ (|_| (_+_ (_*_ a b) c)) d) (_! e) (-_ e)
+\end{anglercode}
+\end{blueleft}
+
+\section{Comportamientos}
