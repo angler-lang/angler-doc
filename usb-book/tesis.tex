@@ -63,14 +63,18 @@
 \definecolor{crimson}{rgb}{0.86, 0.08, 0.24}
 
 \newcommand{\inlinecode}{\texttt}
-\newenvironment{anglercode}
-    {\VerbatimEnvironment
+\newenvironment{anglercode}{
+    \VerbatimEnvironment
+    \scriptsize
     \linespread{1}
-    \begin{Verbatim}[xleftmargin=1cm,xrightmargin=1cm,
-                     frame=single,framesep=2mm,
-                     rulecolor=\color{cerulean},
-                     fontsize=\footnotesize]}
-    {\end{Verbatim}}
+    \begin{leftframe}[skipabove=1cm,leftmargin=1cm,rightmargin=1cm,
+                      topline=true,linewidth=0.5pt,linecolor=cerulean,
+                      nobreak=true]
+    \begin{Verbatim}
+}{
+    \end{Verbatim}
+    \end{leftframe}
+}
 
 % Macros
 \newcommand{\projectTitle}{Angler}
