@@ -9,6 +9,8 @@
 % Básicos
 \usepackage{natbib}
 \usepackage{enumerate}
+\usepackage{datetime}
+\longdate
 
 % Para dibujar figuras
 \usepackage{tikz}
@@ -92,11 +94,7 @@
 \newcommand{\authorName}{Matteo José Ferrando Briceño}
 \newcommand{\tutorName}{Ricardo Monascal}
 
-\newcommand{\presentD}{XX\xspace}
-\newcommand{\presentM}{Febrero\xspace}
-\newcommand{\presentY}{2016\xspace}
-
-\newcommand{\chapterTitle}{}
+\newdate{presentationdate}{16}{3}{2016}
 
 \begin{titlepage}
     \title{\vspace{-2cm} \includegraphics[width=1.2in]{./usb.png} \\[.2cm]
@@ -112,7 +110,7 @@
 Presentado ante la Ilustre Universidad Simón Bolívar \\
 como requisito parcial para optar al título de \\
 Ingeniero de Computación}
-    \date{Sartenejas, \presentM de \presentY}
+    \date{Sartenejas, \monthname[\the\month] de \the\year}
 \end{titlepage}
 
 \begin{document}

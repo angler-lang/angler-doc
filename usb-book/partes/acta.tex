@@ -43,30 +43,27 @@ Este Proyecto de Grado ha sido aprobado por el siguiente jurado examinador: \\
 \bigskip
 \bigskip
 
+\newcommand{\juryinfo}[1]{
+\line(1,0){200} \\
+#1 \\
+
+\bigskip
+\bigskip
+}
+
 % Despues de cada line coloca el (los) nombre(s) de
 % cada uno de los integrantes del jurado.
-\line(1,0){200} \\
-\tutorName \\
+\juryinfo{\tutorName}
+\juryinfo{@jurado1}
+\juryinfo{@jurado2}
 
-\bigskip
-\bigskip
+\let\juryinfo\undefined
 
-\line(1,0){200} \\
-@jurado1\\
-
-\bigskip
-\bigskip
-
-\line(1,0){200} \\
-@jurado2\\
 \end{minipage}
-
-\bigskip
-\bigskip
 \vfill
 
 % Date/Fecha
-{\large \bfseries Sartenejas, \presentD de \presentM de \presentY}
+{\large \bfseries Sartenejas, \displaydate{presentationdate}}
 
 \end{center}
 \end{titlepage}
