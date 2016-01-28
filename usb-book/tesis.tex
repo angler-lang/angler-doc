@@ -35,6 +35,11 @@
 % Para texto Lorem Ipsum
 \usepackage{blindtext}
 
+% Para suprimir algunas advertencias
+\usepackage{silence}
+
+\WarningFilter{blindtext}{}     % Supress the "spanish not defined, using English instead"
+
 % Paquetes locales
 % Puedes agregar paquetes locales (archivos .sty) en un subdirectorio % 'paquetes'.
 % Utiliza la sintaxis \usepackage{paquetes/nombrePaquete}
@@ -58,8 +63,14 @@
 
 % Para colocar un margen a la izquierda
 \newmdenv[hidealllines=true,leftline=true,linewidth=2pt]{leftframe}
+
+% greens
 \definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
+
+% blues
 \definecolor{cerulean}{rgb}{0.0, 0.48, 0.65}
+
+% reds
 \definecolor{crimson}{rgb}{0.86, 0.08, 0.24}
 
 \newcommand{\inlinecode}{\texttt}
