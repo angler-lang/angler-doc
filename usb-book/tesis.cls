@@ -51,7 +51,7 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{2.0ex plus0.5ex minus0.2ex}
 
-\usepackage{paquetes/vmargin}
+\usepackage{vmargin}
 \setmarginsrb           { 1.5in}  % left margin
                         { 0.6in}  % top margin
                         { 1.0in}  % right margin
@@ -113,11 +113,10 @@
 \setcounter{dbltopnumber}{9}
 \usepackage{graphicx}
 \usepackage{epstopdf}
-\usepackage[scriptsize]{paquetes/subfigure}
+\usepackage[scriptsize]{subfigure}
 \usepackage{booktabs}
 \usepackage{rotating}
 \usepackage{listings}
-\usepackage{paquetes/lstpatch}
 \lstset{captionpos=b,
         frame=tb,
         basicstyle=\scriptsize\ttfamily,
@@ -228,7 +227,7 @@
 %   \cleardoublepage
 % }
 \newenvironment{abstract}
-{ 
+{
   \btypeout{Abstract Page}
   \thispagestyle{plain}
   \begin{center}
