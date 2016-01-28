@@ -72,7 +72,7 @@ not True = False
 not False = True
 \end{anglercode}
 
-Ésta alternativa hacía que la única diferencia entre una función y un tipo es que no tenga declaraciones asociadas, pero el siguiente ejemplo nos dejó preguntándonos qué debería suceder:
+Esta alternativa hacía que la única diferencia entre una función y un tipo es que no tenga declaraciones asociadas, pero el siguiente ejemplo nos dejó preguntándonos qué debería suceder:
 
 \begin{anglercode}
 Bool : Type
@@ -83,7 +83,7 @@ not : Bool -> Bool
 not True = False
 not False = True
 
-True = False
+True = False    -- ¿los pattern matching ahora son inválidos?
 \end{anglercode}
 
 ¿Ahora \inlinecode{True} deja de ser algo sobre lo que se puede hacer pattern matching, como en la función \inlinecode{not}?; como podemos ver, da paso a que un programa deje de funcionar con tan solo una línea sospechosa.
@@ -101,7 +101,7 @@ not False = True
 
 IDK : Bool
 
-not IDK     -- ¿qué debería reportarse aquí?
+not IDK         -- ¿qué debería reportarse aquí?
 \end{anglercode}
 
 Aquí agregamos un nuevo constructor a el tipo \inlinecode{Bool} y aunque tenga sentido usarlo en la función \inlinecode{not}, pues espera algo del tipo \inlinecode{Bool}, el programa va a dar un error al correr, no al ser analizado por errores estáticos.
@@ -315,7 +315,7 @@ Los caracteres literales suelen escribirse usando comillas simples (\inlinecode{
 \begin{anglercode}
 'a'     -- caracter
 a''     -- identificador
-+'      -- identificador
++''     -- identificador
 \end{anglercode}
 \end{blueleft}
 
@@ -365,16 +365,38 @@ operator |_|                closed
 operator if_then_else_      prefix  0
 operator _==_               infixN  2
 operator _+_                infixL  4
+operator _-_                infixL  4
 operator _*_                infixL  5
+operator _/_                infixL  5
 operator _^_                infixR  6
 operator -_                 prefix  7
 operator _!                 postfix 8
 
 -- ...
 
-if | a * b + c | == d then e ! else - e
--- if_then_else_ (_==_ (|_| (_+_ (_*_ a b) c)) d) (_! e) (-_ e)
+if | a * b + c - d | == e then f ! else - f
+-- if_then_else_ (_==_ (|_| (_-_ (_+_ (_*_ a b) c) d)) e) (_! f) (-_ f)
 \end{anglercode}
+\label{operatorsdeclaration}
 \end{blueleft}
+
+\section{Operadores \emph{mixfijos} en acción}
+
+\begin{greenleft}
+La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinecode{p} al nodo \inlinecode{q}, (\inlinecode{p \longrightarrow q}) representa que los operadores en el nodo \inlinecode{q} tienen mayor precedencia que los operadores en el nodo \inlinecode{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. La siguiente gramática está basada en la gramática presentada en el artículo y las modificaciones que proponen:
+
+\begin{center}
+% TODO
+\includegraphics[width=0.75\textwidth]{grammar.png}
+\captionof{figure}{Gramática de operadores}
+\label{imagen:grammar}
+\end{center}
+
+Por ejemplo, con los operadores declarados en \ref{operatorsdeclaration}
+\end{greenleft}
+
+\begin{redleft}
+En nuestra implementación del parser de operadores mixfijos, no construímos un grafo sino una \emph{lista de niveles}, ya que la precedencia entre operadores no es asignada entre dos operadores a la vez, sino con un número entero.
+\end{redleft}
 
 \section{Comportamientos}
