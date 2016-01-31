@@ -64,7 +64,15 @@
 \newcommand\listsymbolname{Acrónimos y Símbolos}
 
 % Para colocar un margen a la izquierda
-\newmdenv[hidealllines=true,leftline=true,linewidth=2pt]{leftframe}
+\newmdenv[
+        hidealllines=true,
+        leftline=true,
+        frametitlerule=true,
+        repeatframetitle=true,
+        frametitleaboveskip=2pt,
+        linewidth=1.5pt,
+        frametitlerulewidth=1pt
+    ]{leftframe}
 
 % greens
 \definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
@@ -88,7 +96,10 @@
         operator, prefix, postfix, infixL, infixR, infixN
     },
     % symbol keywords
-    morekeywords={[2]:, [2]=, [2]\\, [2]->, [2]., [2]\_, [2](, [2]), [2]\{, [2]\}}
+    morekeywords={
+        [2]:, [2]=, [2]\\, [2]->, [2].,
+        [2]\_, [2](, [2]), [2]\{, [2]\}
+    },
     sensitive=true,                 % keywords are case-sensitive
     morecomment=[l]{\-\-},          % line comments
     morecomment=[s]{\{\-}{\-\}},    % block comments
@@ -96,7 +107,7 @@
     morestring=[d]',                % characters are in single quotes
 }
 
-\newcommand{\inlinecode}[1]{{\bfseries\color{darkcandyapplered}\texttt{$#1$}}}
+\newcommand{\inlinecode}[1]{ {\bfseries\color{darkcandyapplered}\texttt{$#1$}} }
 \lstnewenvironment{anglercode}{
     \linespread{1}
     \lstset{
@@ -139,19 +150,22 @@
 \newdate{presentationdate}{16}{3}{2016}
 
 \begin{titlepage}
-    \title{\vspace{-2cm} \includegraphics[width=1.2in]{./usb.png} \\[.2cm]
+    \title{
+        \vspace{-2cm} \includegraphics[width=1.2in]{./usb.png} \\[.2cm]
         \large Universidad Simón Bolívar \\
         Decanato de Estudios Profesionales \\
         Coordinación de Ingeniería de la Computación
-        \vfill \LARGE \projectTitle \vfill}
+        \vfill \LARGE \projectTitle \vfill
+    }
     \author{Por: \\
         \authorName \\[1.2cm]
         Realizado con la asesoría de: \\
         \tutorName \\[1.2cm]
         PROYECTO DE GRADO \\
-Presentado ante la Ilustre Universidad Simón Bolívar \\
-como requisito parcial para optar al título de \\
-Ingeniero de Computación}
+        Presentado ante la Ilustre Universidad Simón Bolívar \\
+        como requisito parcial para optar al título de \\
+        Ingeniero de Computación
+    }
     \date{Sartenejas, \monthname[\the\month] de \the\year}
 \end{titlepage}
 

@@ -4,31 +4,28 @@
 \label{capitulo4}
 \lhead{Capítulo 4. \emph{\chapterTitle}}
 
-\newenvironment{greenleft}
-  {\begin{leftframe}[linecolor=caribbeangreen]}
-  {\end{leftframe}}
-\newenvironment{blueleft}
-  {\begin{leftframe}[linecolor=cerulean]}
-  {\end{leftframe}}
-\newenvironment{redleft}
-  {\begin{leftframe}[linecolor=crimson]}
-  {\end{leftframe}}
+\newenvironment{investigationfr}
+    {\begin{leftframe}[frametitle={Investigación},linecolor=caribbeangreen]}
+    {\end{leftframe}}
+\newenvironment{designfr}
+    {\begin{leftframe}[frametitle={Diseño},linecolor=cerulean]}
+    {\end{leftframe}}
+\newenvironment{implementationfr}
+    {\begin{leftframe}[frametitle={Implementación},linecolor=crimson]}
+    {\end{leftframe}}
 
-\begin{greenleft}
-    Investigación
-\end{greenleft}
+\begin{investigationfr}
+\end{investigationfr}
 
-\begin{blueleft}
-    Diseño
-\end{blueleft}
+\begin{designfr}
+\end{designfr}
 
-\begin{redleft}
-    Implementación
-\end{redleft}
+\begin{implementationfr}
+\end{implementationfr}
 
 \section{Ideas iniciales}
 
-\begin{blueleft}
+\begin{designfr}
 Se comenzó con algunas ideas que consideramos básicas para el lenguaje.
 
 \begin{itemize}
@@ -38,11 +35,11 @@ Se comenzó con algunas ideas que consideramos básicas para el lenguaje.
     \item El sistema de tipos debe tener tipos dependientes.
     \item Los alcances del lenguaje deben ser determinados por la indentación.
 \end{itemize}
-\end{blueleft}
+\end{designfr}
 
 \section{Expresiones, tipos y sus constructores}
 
-\begin{blueleft}
+\begin{designfr}
 Ya que el lenguaje debe tener tipos dependientes, se decidió desde un principio que un tipo es sencillamente una expresión, no un elemento especial del lenguaje, hace que en cualquier parte donde se espera un tipo, debería poder escribirse cualquier expresión, mientras que el chequeo de tipos pase sin errores.
 
 Al hacer estos dos elementos uno solo, se definieron las diferentes construcciones posibles de expresiones.
@@ -55,11 +52,11 @@ Al hacer estos dos elementos uno solo, se definieron las diferentes construccion
     \item Alcance de declaraciones para una expresión (\inlinecode{where}, \inlinecode{let-in})
     \item Cuantificadores universales y existenciales de tipos
 \end{itemize}
-\end{blueleft}
+\end{designfr}
 
 \section{Tipos y funciones, ¿abiertos o cerrados?}
 
-\begin{blueleft}
+\begin{designfr}
 Nos preguntamos porqué se ha hecho una diferencia tan clara en otros lenguajes de programación funcionales entre lo que es una función, un tipo y un constructor de tipo, así que comenzamos con la idea de que todos éstos fueran declarados de la misma manera.
 
 \begin{anglercode}
@@ -200,19 +197,19 @@ isUSD _ = False         -- *cierra* la función
 
 isUSD (XBT _) = True    -- este caso nunca correrá
 \end{anglercode}
-\end{blueleft}
+\end{designfr}
 
 \section{Identificadores, ¿mayúscuas o minúsculas?}
 
-\begin{blueleft}
+\begin{designfr}
 En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
 
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente.
-\end{blueleft}
+\end{designfr}
 
 \section{Cuantificadores: parámetros y argumentos implícitos}
 
-\begin{blueleft}
+\begin{designfr}
 Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente definido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte \emph{implícita}, que es el cuantificador universal; y la parte \emph{explícita}:
 
 \begin{anglercode}
@@ -258,11 +255,11 @@ vfilter : forall t:Type, n:Nat . (t -> Bool) -> Vect n t -> exists m:Nat . Vect 
 \end{anglercode}
 
 Logrando una estructura parecida entre los cuantificadores universales y existenciales. El cuantificador existencial \emph{no} puede recibir argumentos implícitos. Esta sintaxis es \emph{azúcar sintáctica} para los cuantificadores existenciales, ya que estos están definidos en el lenguaje.
-\end{blueleft}
+\end{designfr}
 
 \section{El \emph{cuantificador} de selección}
 
-\begin{blueleft}
+\begin{designfr}
 Luego nos dimos cuenta de que podemos querer introducir nombres para parámetros explícitos, es decir, lo que normalmente haríamos con un cuantificador universal, pero en vez de ser \emph{para todo} que sea para el valor dado. Esta idea se maneja en los lenguajes estudiados colocando una asociación de nombre directamente:
 
 \begin{anglercode}
@@ -273,11 +270,11 @@ id' _ x = x
 Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra \inlinecode{select} para hacer obvio que se acerca al funcionamiento de los cuantificadores.
 
 Además se lee \emph{\guillemotleft selecciona un \inlinecode{Type}, que llamaremos \inlinecode{t}\guillemotright}.
-\end{blueleft}
+\end{designfr}
 
 \section{Identificadores: evitando confusiones}
 
-\begin{blueleft}
+\begin{designfr}
 Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como \inlinecode{+}, \inlinecode{*} y demás, pero para facilitar el uso del lenguaje, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
 
 \begin{anglercode}
@@ -287,11 +284,11 @@ v0          -- v0
 ++          -- ++
 var++v0     -- var ++ v0
 \end{anglercode}
-\end{blueleft}
+\end{designfr}
 
 \section{No me importa, te lo digo en inglés, I \emph{don't care}}
 
-\begin{blueleft}
+\begin{designfr}
 En una función puede haber casos en que un argumento no es importante para su valor resultante, a estos argumentos se les puede asignar un nombre que no usaremos, o indicar explícitamente que no es importante.
 
 \begin{anglercode}
@@ -305,11 +302,11 @@ Donde el caracter \inlinecode{?} indica que no importa ese valor, luego se decid
 const : forall t:Type, v:Type . t -> v -> t
 const x _ = x
 \end{anglercode}
-\end{blueleft}
+\end{designfr}
 
 \section{¿Identificador o caracter?}
 
-\begin{blueleft}
+\begin{designfr}
 Los caracteres literales suelen escribirse usando comillas simples (\inlinecode{'}), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único \emph{símbolo} que está en ambas categorías de identificadores, la de símbolos y la de letras.
 
 \begin{anglercode}
@@ -317,11 +314,11 @@ Los caracteres literales suelen escribirse usando comillas simples (\inlinecode{
 a''     -- identificador
 +''     -- identificador
 \end{anglercode}
-\end{blueleft}
+\end{designfr}
 
 \section{Operadores ahuecados}
 
-\begin{blueleft}
+\begin{designfr}
 Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy \emph{empinada}, por lo que la posibilidad de definir operadores es escencial. Se propuso usar \emph{operadores mixfijos}, estos funcionan para definir las \emph{partes} de un operador y sus \emph{huecos}, que es donde irían sus operandos; para indicar los huecos de un operador, usaremos el caracter piso (\inlinecode{\_}).
 
 \begin{anglercode}
@@ -340,12 +337,12 @@ if_then_else_ True  x _ = x
 if_then_else_ False _ y = y
 \end{anglercode}
 
-Nótese que se usa \inlinecode{\_} tanto para \emph{don't care} como para los huecos de los identificadores, e.g. \inlinecode{if\_then\_else\_ False \_ y}.
-\end{blueleft}
+Nótese que se usa \inlinecode{\_} tanto para \emph{don't care} como para los huecos de los identificadores, e.g. \inlinecode{if\_then\_else\_\ False\ \_\ y}.
+\end{designfr}
 
 \section{Huecos entre identificadores}
 
-\begin{blueleft}
+\begin{designfr}
 Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un \inlinecode{\_} de por medio.
 
 \begin{anglercode}
@@ -353,11 +350,11 @@ if_?_:_ : forall t:Type . Bool -> t -> t -> t
 if True  ? x : _ = x
 if False ? _ : y = y
 \end{anglercode}
-\end{blueleft}
+\end{designfr}
 
 \section{Definición de operadores}
 
-\begin{blueleft}
+\begin{designfr}
 En un principio se consideró que si un identificador tiene \inlinecode{\_} se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, o está definido o no. Lo que se expresa es una regla de \emph{reordenamiento} de identificadores.
 
 \begin{anglercode}
@@ -378,11 +375,11 @@ if | a * b + c - d | == e then f ! else - f
 -- if_then_else_ (_==_ (|_| (_-_ (_+_ (_*_ a b) c) d)) e) (_! f) (-_ f)
 \end{anglercode}
 \label{operatorsdeclaration}
-\end{blueleft}
+\end{designfr}
 
 \section{Operadores \emph{mixfijos} en acción}
 
-\begin{greenleft}
+\begin{investigationfr}
 La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinecode{p} al nodo \inlinecode{q}, (\inlinecode{p \longrightarrow q}) representa que los operadores en el nodo \inlinecode{q} tienen mayor precedencia que los operadores en el nodo \inlinecode{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. La siguiente gramática está basada en la gramática presentada en el artículo y las modificaciones que proponen:
 
 \begin{center}
@@ -393,10 +390,10 @@ La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{
 \end{center}
 
 Por ejemplo, con los operadores declarados en \ref{operatorsdeclaration}
-\end{greenleft}
+\end{investigationfr}
 
-\begin{redleft}
+\begin{implementationfr}
 En nuestra implementación del parser de operadores mixfijos, no construímos un grafo sino una \emph{lista de niveles}, ya que la precedencia entre operadores no es asignada entre dos operadores a la vez, sino con un número entero.
-\end{redleft}
+\end{implementationfr}
 
 \section{Comportamientos}
