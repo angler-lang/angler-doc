@@ -379,16 +379,7 @@ if | a * b + c - d | == e then f ! else - f
 \section{Operadores \emph{mixfijos} en acción}
 
 \begin{investigationfr}
-La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{article:mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinecode{p} al nodo \inlinecode{q}, (\inlinecode{p \longrightarrow q}) representa que los operadores en el nodo \inlinecode{q} tienen mayor precedencia que los operadores en el nodo \inlinecode{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. La siguiente gramática está basada en la gramática presentada en el artículo y las modificaciones que proponen:
-
-\begin{center}
-% TODO
-\includegraphics[width=0.75\textwidth]{grammar.png}
-\captionof{figure}{Gramática de operadores}
-\label{fig:grammar}
-\end{center}
-
-Por ejemplo, con los operadores declarados en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
+La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{article:mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinecode{p} al nodo \inlinecode{q}, (\inlinecode{p \longrightarrow q}) representa que los operadores en el nodo \inlinecode{q} tienen mayor precedencia que los operadores en el nodo \inlinecode{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{operator-graph.pdf}
@@ -396,13 +387,7 @@ Por ejemplo, con los operadores declarados en \ref{lst:operatorsdefinition} se o
 \label{fig:operator-graph}
 \end{center}
 
-Como podemos ver, se obtiene un grafo de precedencia lineal, ya que en nuestro lenguaje no se puede definir explícitamente la precedencia entre dos operadores, sino que se asigna un \emph{nivel de precedencia}. Por lo que podemos reducir la idea de un grafo de precedencia a una lista de precedencias, donde un valor de precedencia mayor indica una mayor precedencia (\emph{¡duh!}).
-\end{investigationfr}
-
-\begin{implementationfr}
-En nuestra implementación del parser de operadores mixfijos, no construímos un grafo sino una \emph{lista de niveles de precedencia}, ya que la precedencia entre operadores no es asignada entre dos operadores únicamente, sino que se asigna un valor para comparación con todos los otros operadores presentes.
-
-Utilizamos una librería de \emph{combinadores de parsers}, \cite{software:megaparsec}, y a partir de la lista de precedencias se genera un parser basado en la siguiente gramática:
+Como podemos ver, se obtiene un grafo de precedencia lineal, ya que en nuestro lenguaje no se puede definir explícitamente la precedencia entre dos operadores, sino que se asigna un \emph{nivel de precedencia}. Por lo que podemos reducir la idea de un grafo de precedencia a una lista de precedencias, donde un valor de precedencia mayor indica una mayor precedencia (\emph{¡duh!}); los operadores con asociatividad cerrada (\inlinecode{closed}) se consideran como la menor precedencia.
 
 {   % for \overp and \_ to only exist here
 \newcommand{\overp}[1]{\overset{#1}{p}}
@@ -433,12 +418,18 @@ closed ::=& \left<identificador\right> \_
           | \left( \bigvee \_ op_p^{closed} \right)
 \\
 op_p^{asoc} ::=& \left( \bigvee n_1\ expr\ n_2\ expr\ \cdots\ n_k \_ \cdotp \_
-                        \parbox{.3\textwidth}{\footnotesize$n_1,\ldots,n_k$ son las partes de un operador en el nivel $p$ con la asociatividad $asoc$} \right)
+                        \parbox{0.3\textwidth}{\footnotesize$n_1,\ldots,n_k$ son las partes de un operador en el nivel $p$ con la asociatividad $asoc$} \right)
 \end{split}
 \end{equation*}
 \captionof{figure}{Gramática de precedencia de operadores basada en \cite{article:mixfix}}
+\label{fig:mixfix-grammar}
 }
+\end{investigationfr}
 
+\begin{implementationfr}
+En nuestra implementación del parser de operadores mixfijos, no construímos un grafo sino una \emph{lista de niveles de precedencia}, ya que la precedencia entre operadores no es asignada entre dos operadores únicamente, sino que se asigna un valor para comparación con todos los otros operadores presentes.
+
+Utilizamos una librería de \emph{combinadores de parsers}, \cite{software:megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
 \end{implementationfr}
 
 \section{Comportamientos}
