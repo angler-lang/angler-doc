@@ -66,13 +66,20 @@
 % Para colocar un margen a la izquierda
 \newmdenv[
         hidealllines=true,
-        leftline=true,
-        frametitlerule=true,
-        repeatframetitle=true,
-        frametitleaboveskip=2pt,
+        leftline=true,topline=true,
+        frametitleaboveskip=-5pt,
         linewidth=1.5pt,
-        frametitlerulewidth=1pt
     ]{leftframe}
+
+\newenvironment{coloredframe}[2]{
+    \mdfsetup{
+        frametitle={\colorbox{white}{\space#1\space}},
+        linecolor=#2
+    }
+    \begin{leftframe}
+}{
+    \end{leftframe}
+}
 
 % greens
 \definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
@@ -108,7 +115,7 @@
 }
 
 \newcommand{\inlinecode}[1]{ {\bfseries\color{darkcandyapplered}\texttt{$#1$}} }
-\lstnewenvironment{anglercode}{
+\lstnewenvironment{anglercode}[1][]{
     \linespread{1}
     \lstset{
         language=angler,
@@ -138,7 +145,8 @@
                   {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
                   {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
                   {€}{{\EUR}}1 {£}{{\pounds}}1 {¿}{{\textquestiondown}}1
-                  {¡}{{\textexclamdown}}1
+                  {¡}{{\textexclamdown}}1,
+        #1                                  % settings for the lst environment
     }
 }{}
 
