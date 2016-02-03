@@ -1,0 +1,17 @@
+digraph {
+    // draw from left to right
+    rankdir=LR
+
+    // nodes
+    closed      [label="|_|"]
+    level0      [label="if_then_else_"]
+    level2      [label="_==_"]
+    level4      [label="_+_\n\n_-_"]
+    level5      [label="_*_\n\n_/_"]
+    level6      [label="_^_"]
+    level7      [label="-_"]
+    level8      [label="_!"]
+
+    // relations
+    closed -> level0 -> level2 -> level4 -> level5 -> level6 -> level7 -> level8
+}
