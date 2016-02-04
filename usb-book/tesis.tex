@@ -10,6 +10,7 @@
 \usepackage{natbib}
 \usepackage{enumerate}
 \usepackage{datetime}
+\usepackage{csquotes}
 \longdate
 
 % Para dibujar figuras
@@ -72,10 +73,7 @@
     ]{leftframe}
 
 \newenvironment{coloredframe}[2]{
-    \mdfsetup{
-        frametitle={\colorbox{white}{\space#1\space}},
-        linecolor=#2
-    }
+    \mdfsetup{frametitle={\colorbox{white}{\space#1\space}},linecolor=#2}
     \begin{leftframe}
 }{
     \end{leftframe}
@@ -86,6 +84,7 @@
 
 % blues
 \definecolor{cerulean}{rgb}{0.0, 0.48, 0.65}
+\definecolor{cyan process}{rgb}{0.0, 0.72, 0.92}
 
 % reds
 \definecolor{crimson}{rgb}{0.86, 0.08, 0.24}
@@ -114,7 +113,8 @@
     morestring=[d]',                % characters are in single quotes
 }
 
-\newcommand{\inlinecode}[1]{ {\bfseries\color{darkcandyapplered}\texttt{$#1$}} }
+\newcommand{\inlinemath}[1]{{\small\bfseries\color{cyan process}\texttt{$#1$}}}
+\newcommand{\inlinecode}[1]{{\small\bfseries\color{darkcandyapplered}\texttt{#1}}}
 \lstnewenvironment{anglercode}[1][]{
     \linespread{1}
     \lstset{

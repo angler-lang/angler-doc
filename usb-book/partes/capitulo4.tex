@@ -4,6 +4,7 @@
 \label{ch:development}
 \lhead{Capítulo 4. \emph{\chapterTitle}}
 
+{   % for \investigationfr, \designfr and \implementationfr to only exists here
 \newenvironment{investigationfr}
     {\begin{coloredframe}{Investigación}{caribbeangreen}}
     {\end{coloredframe}}
@@ -260,7 +261,7 @@ Logrando una estructura parecida entre los cuantificadores universales y existen
 \section{El \emph{cuantificador} de selección}
 
 \begin{designfr}
-Luego nos dimos cuenta de que podemos querer introducir nombres para parámetros explícitos, es decir, lo que normalmente haríamos con un cuantificador universal, pero en vez de ser \emph{para todo} que sea para el valor dado. Esta idea se maneja en los lenguajes estudiados colocando una asociación de nombre directamente:
+Nos dimos cuenta de que podemos querer introducir nombres para parámetros explícitos, es decir, lo que normalmente haríamos con un cuantificador universal, pero en vez de ser \emph{para todo} que sea para el valor dado. Esta idea se maneja en los lenguajes estudiados colocando una asociación de nombre directamente:
 
 \begin{anglercode}
 id' : (t : Type) -> t -> t
@@ -269,7 +270,12 @@ id' _ x = x
 
 Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra \inlinecode{select} para hacer obvio que se acerca al funcionamiento de los cuantificadores.
 
-Además se lee \emph{\guillemotleft selecciona un \inlinecode{Type}, que llamaremos \inlinecode{t}\guillemotright}.
+\begin{anglercode}
+id' : (select t : Type) -> t -> t
+id' _ x = x
+\end{anglercode}
+
+Además se lee \emph{\enquote{selecciona un \inlinecode{Type}, que llamaremos \inlinecode{t}}}.
 \end{designfr}
 
 \section{Identificadores: evitando confusiones}
@@ -379,7 +385,7 @@ if | a * b + c - d | == e then f ! else - f
 \section{Operadores \emph{mixfijos} en acción}
 
 \begin{investigationfr}
-La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{article:mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinecode{p} al nodo \inlinecode{q}, (\inlinecode{p \longrightarrow q}) representa que los operadores en el nodo \inlinecode{q} tienen mayor precedencia que los operadores en el nodo \inlinecode{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
+La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{article:mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinemath{p} al nodo \inlinemath{q}, (\inlinemath{p \longrightarrow q}) representa que los operadores en el nodo \inlinemath{q} tienen mayor precedencia que los operadores en el nodo \inlinemath{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{operator-graph.pdf}
@@ -432,4 +438,6 @@ En nuestra implementación del parser de operadores mixfijos, no construímos un
 Utilizamos una librería de \emph{combinadores de parsers}, \cite{software:megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
 \end{implementationfr}
 
-\section{Comportamientos}
+\section{Comportamientos o: cómo aprendí a usar \emph{type classes} y a amar el polimorfismo}
+
+}
