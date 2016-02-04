@@ -385,7 +385,7 @@ if | a * b + c - d | == e then f ! else - f
 \section{Operadores \emph{mixfijos} en acción}
 
 \begin{investigationfr}
-La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \cite{article:mixfix} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinemath{p} al nodo \inlinemath{q}, (\inlinemath{p \longrightarrow q}) representa que los operadores en el nodo \inlinemath{q} tienen mayor precedencia que los operadores en el nodo \inlinemath{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
+La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \textcite{parsing-mixfix-operators} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinemath{p} al nodo \inlinemath{q}, (\inlinemath{p \longrightarrow q}) representa que los operadores en el nodo \inlinemath{q} tienen mayor precedencia que los operadores en el nodo \inlinemath{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{operator-graph.pdf}
@@ -427,7 +427,7 @@ op_p^{asoc} ::=& \left( \bigvee n_1\ expr\ n_2\ expr\ \cdots\ n_k \_ \cdotp \_
                         \parbox{0.3\textwidth}{\footnotesize$n_1,\ldots,n_k$ son las partes de un operador en el nivel $p$ con la asociatividad $asoc$} \right)
 \end{split}
 \end{equation*}
-\captionof{figure}{Gramática de precedencia de operadores basada en \cite{article:mixfix}}
+\captionof{figure}{Gramática de precedencia de operadores basada en \textcite{parsing-mixfix-operators}}
 \label{fig:mixfix-grammar}
 }
 \end{investigationfr}
@@ -435,9 +435,130 @@ op_p^{asoc} ::=& \left( \bigvee n_1\ expr\ n_2\ expr\ \cdots\ n_k \_ \cdotp \_
 \begin{implementationfr}
 En nuestra implementación del parser de operadores mixfijos, no construímos un grafo sino una \emph{lista de niveles de precedencia}, ya que la precedencia entre operadores no es asignada entre dos operadores únicamente, sino que se asigna un valor para comparación con todos los otros operadores presentes.
 
-Utilizamos una librería de \emph{combinadores de parsers}, \cite{software:megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
+Utilizamos \emph{Megaparsec}, una librería de \emph{combinadores de parsers} \textcite{megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
 \end{implementationfr}
 
-\section{Comportamientos o: cómo aprendí a usar \emph{type classes} y a amar el polimorfismo}
+\section{Comportamientos, ¿vale la pena?}
+
+\begin{designfr}
+En distintos lenguajes estudiados se utiliza \emph{clases de tipos}, una herramienta para introducir polimorfismo, esto es, poder utilizar un mismo identificador de función para diferentes tipos.
+
+\begin{haskellcode}
+-- tiene un `forall t:Type .` implícito
+class Grupoid t where
+    (<+>) :: t -> t -> t
+
+-- tiene un `forall t:Type .` implícito
+instance Grupoid [t] where
+    -- concat
+    (<+>) = concat
+        where
+            concat []     bs = bs
+            concat (a:as) bs = a : concat as bs
+
+self :: Grupoid t => t -> t
+self a = a <+> a
+
+self [1, 2]                 -- [1, 2, 1, 2]
+\end{haskellcode}
+
+\begin{haskellcode}
+-- tiene un `forall t:Type .` implícito
+class Eq t where
+    (==) :: t -> t -> Bool
+    (/=) :: t -> t -> Bool
+
+    x /= y = not (x == y)
+    x == y = not (x /= y)
+
+-- tiene un `forall t:Type .` implícito
+instance Eq Bool where
+    True == True = True
+    False == False = True
+    _ == _ = False
+
+elem :: Eq t => t -> [t] -> True
+elem _ [] = False
+elem x (y:ys) = x == y || elem x ys
+
+elem False [False, True]    -- True
+\end{haskellcode}
+
+En un primer momento no se consideraron necesarias para nuestro lenguaje, aunque su facilidad de uso es innegable, porque creíamos que se podía lograr el mismo comportamiento usando tipos dependientes.
+
+\begin{anglercode}
+closed Grupoid : Type -> Type with
+        GrupoidOp : forall a:Type . (a -> a -> a) -> Grupoid a
+
+ListGrupoid : forall t:Type . Grupoid (List t)
+ListGrupoid = GrupoidOp concat
+    where
+        concat : forall t:Type . List t -> List t -> List t
+        concat Nil bs = bs
+        concat (a :: as) bs = a :: concat as bs
+
+self : forall t:Type . Grupoid t -> t -> t
+self (MonoidOp op) a = op a a
+
+self ListGrupoid (1 :: 2 :: Nil)    -- 1 :: 2 :: 1 :: 2 :: Nil
+\end{anglercode}
+
+\begin{anglercode}
+closed Eq : Type -> Type with
+    EqOp : forall t:Type . (t -> t -> Bool) -> Eq t
+
+ListEq : forall t:Type . Eq (List t)
+ListEq = EqOp equal
+    where
+        equal : forall t:Type . List t -> List t -> List t
+        equal Nil Nil = True
+        equal (x :: xs) (y :: ys) = equal x y && equal xs ys
+        equal _ _ = False
+
+BoolEq : Eq Bool
+BoolEq = EqOp equal
+    where
+        equal : Bool -> Bool -> Bool
+        equal True  True  = True
+        equal False False = True
+        equal _     _     = False
+
+elem : forall t:Type . Eq t -> t -> List t -> t
+elem _         _ Nil = False
+elem (EqOp op) x (y :: ys) = op x y || elem (EqOp op) x ys
+
+elem BoolEq False (False :: True :: Nil)    -- True
+\end{anglercode}
+
+La mayor diferencia es que para utilizar estas funciones en nuestro lenguaje, se debe pasar la \emph{instancia} a utilizar explícitamente. De hecho, esta es una manera válida para plantear las clases de tipos (\textcite{scrap-type-classes}), como azúcar sintáctica para tipos y constructores.
+\end{designfr}
+
+\section{Comportamientos o: cómo aprendí a usar \emph{clases de tipos} y a amar el polimorfismo}
+
+\begin{designfr}
+Decidimos plantear una posible sintaxis para las clases de tipos. En los lenguajes estudiados se les suele llamar \enquote{clase} (\inlinecode{class}); pero nos pareció más intuitivo llamarlas \enquote{comportamientos} (\inlinecode{behaviour}), pues es una definición de que un tipo se \emph{comporta} de cierta forma.
+
+\begin{anglercode}
+behaviour Eq on t : Type defines
+    _==_ : t -> t -> Bool
+    _/=_ : t -> t -> Bool
+  with
+    a /= b = not (a == b)
+    a == b = not (a /= b)
+
+Bool is Eq with
+    True  == True  = True
+    False == False = True
+    _     == _     = False
+
+elem : forall t:Type is Eq . t -> List t -> Bool
+elem _ Nil = False
+elem x (y :: ys) = x == y || elem x ys
+\end{anglercode}
+
+TODO
+
+Se cambiaron algunos identificadores reservados, pero la definición e instanciación es equivalente a la de clases de tipos vista en otros lenguajes. Una diferencia considerable es la del requerimiento de clases, e.g. \inlinecode{Type is Eq}, ya que se pierde la traducción intuitiva con la solución de azúcar sintáctica de tipos y constructores presente en los lenguajes estudiados.
+\end{designfr}
 
 }

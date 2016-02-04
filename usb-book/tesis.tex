@@ -3,14 +3,15 @@
 % Paquetes para idioma
 \usepackage{babel}
 \usepackage[utf8]{inputenc}
-\usepackage[fixlanguage]{babelbib}
 
 % Otros paquetes instalados
 % Básicos
-\usepackage{natbib}
+\usepackage[backend=bibtex,style=alphabetic]{biblatex}
+\addbibresource{bibliografia.bib}
 \usepackage{enumerate}
-\usepackage{datetime}
 \usepackage{csquotes}
+\usepackage{url}
+\usepackage{datetime}
 \longdate
 
 % Para dibujar figuras
@@ -282,11 +283,13 @@
 \input{./partes/conclusiones}
 
 % El estilo de la bibliografía es AAAI, definido en el archivo aaai.bst.
+\def\chapterTitle{Bibliografía\xspace}
+
 \label{Bibliography}
-\bibliography{bibliografia}
-\lhead{\emph{Bibliografía}}
-\bibliographystyle{alpha}
+\printbibliography
+\lhead{\emph{\chapterTitle}}
 \addtocontents{toc}{\vspace{2em}}
+\addcontentsline{toc}{chapter}{\chapterTitle}
 
 % Apéndices
 \appendix
