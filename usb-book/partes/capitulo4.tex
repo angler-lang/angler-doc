@@ -616,7 +616,7 @@ ProductMonoid = Monoid'Semigroup ProductSemigroup (S Z)
 \section{Comportamientos, ¿valen la pena?}
 
 \begin{designfr}
-Quedamos dudosos acerca de necesidad de comportamientos, tenemos razones a favor:
+Quedamos dudosos acerca de la necesidad de comportamientos, tenemos varias razones a favor:
 
 \begin{itemize}
     \item Introducen identificadores automáticamente para su uso (e.g. \inlinecode{neutral}).
@@ -631,7 +631,7 @@ Mientras que algunas razones en contra son:
     \item \#TODO.
 \end{itemize}
 
-También tenemos razones a favor de usar tipos y constructores:
+También tenemos razones a favor de simplemente usar tipos y constructores:
 
 \begin{itemize}
     \item Código explícito sobre las \emph{instancias} a utilizar.
@@ -639,12 +639,14 @@ También tenemos razones a favor de usar tipos y constructores:
     \item \#TODO.
 \end{itemize}
 
-Y en contra de usarlos:
+Y razones en contra de usarlos:
 
 \begin{itemize}
-    \item Se prestan a código desordenado.
+    \item Se prestan para escribir código desordenado.
     \item \#TODO.
 \end{itemize}
+
+Por lo que decidimos que no deben formar parte del diseño oficial del lenguaje, pero que en caso de incluirlos en una implementación, se debe usar la sintaxis propuesta.
 \end{designfr}
 
 }
