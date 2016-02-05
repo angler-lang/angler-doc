@@ -81,7 +81,7 @@ not : Bool -> Bool
 not True = False
 not False = True
 
-True = False    -- ¿los pattern matching ahora son inválidos?
+True = False    -- ¿los pattern matching de `True` ahora son inválidos?
 \end{anglercode}
 
 ¿Ahora \inlinecode{True} deja de ser algo sobre lo que se puede hacer pattern matching, como en la función \inlinecode{not}?; como podemos ver, da paso a que un programa deje de funcionar con tan solo una línea sospechosa.
@@ -104,7 +104,7 @@ not IDK         -- ¿qué debería reportarse aquí?
 
 Aquí agregamos un nuevo constructor a el tipo \inlinecode{Bool} y aunque tenga sentido usarlo en la función \inlinecode{not}, pues espera algo del tipo \inlinecode{Bool}, el programa va a dar un error al correr, no al ser analizado por errores estáticos.
 
-Así que se nos ocurrieron los tipos cerrados, éstos son tipos cuyos constructores son listados inmediatamente en un alcance nuevo, y no se le puede agregar más constructores.
+Así que decidimos introducir los tipos cerrados, éstos son tipos cuyos constructores son listados inmediatamente en un alcance nuevo, y no se le puede agregar más constructores.
 
 \begin{anglercode}
 Bool : Type where
@@ -116,9 +116,9 @@ not True = False
 not False = True
 \end{anglercode}
 
-Y ahora ninguno de las confusiones anteriores suedería, al declarar el \inlinecode{IDK} no habría problema, pero al llamar \inlinecode{not IDK}, el intepretador reportaría un error estático.
+Y ahora ninguna de las confusiones anteriores suedería, al declarar el \inlinecode{IDK} no habría problema, pero al llamar \inlinecode{not IDK}, el intepretador reportaría un error estático.
 
-Luego al ver \inlinecode{where} puede ser utilizado al final de cualquier expresión, por lo que no era una palabra que pudieramos utilizar para introducir los constructores, así que optamos por la palabra \inlinecode{with}. También el cambio muestra la diferencia semántica entre \inlinecode{where} y \inlinecode{with}, con el \inlinecode{where} se introduce un alcance sólo disponible en la expresión de éste, mientras que el \inlinecode{with} introduce elementos en el alcance exterior a éste.
+Luego vimos que \inlinecode{where} puede ser utilizado al final de cualquier expresión, por lo que no era un identificador que pudieramos utilizar para introducir los constructores, así que optamos por el identificador \inlinecode{with}. También el cambio muestra la diferencia semántica entre \inlinecode{where} y \inlinecode{with}, con el \inlinecode{where} se introduce un alcance sólo disponible en la expresión de éste, mientras que el \inlinecode{with} introduce elementos en el alcance exterior.
 
 \begin{anglercode}
 Bool : t where t = Type
@@ -144,7 +144,7 @@ XBT : Nat -> Currency   -- bitcoin
 toUSD (XBT n) = USD (n * 400)
 \end{anglercode}
 
-Así que si tenemos tipos abiertos y cerrados, tendremos también funciones abiertas y cerradas; ya que estamos buscando enlazar lo más posible estos dos conceptos:
+Nos pareció lógico que si tenemos tipos abiertos y cerrados, deberíamos tener también funciones abiertas y cerradas; ya que estamos buscando enlazar lo más posible estos dos conceptos:
 
 \begin{anglercode}
 not : Bool -> Bool where
@@ -205,7 +205,7 @@ isUSD (XBT _) = True    -- este caso nunca correrá
 \begin{designfr}
 En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
 
-Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente.
+Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente. Finalmente decidimos que no habrá diferencia semántica entre identificadores que comiencen con mayúscula o minúscula.
 \end{designfr}
 
 \section{Cuantificadores: parámetros y argumentos implícitos}
@@ -322,6 +322,12 @@ a''     -- identificador
 \end{anglercode}
 \end{designfr}
 
+\section{Escribiendo un \emph{lexer} con inspiración}
+
+\begin{implementationfr}
+El lexer de nuestro lenguaje no sería el típico caso de separar tokens e ignorar comentarios, teníamos que también obtener la información de alcances.
+\end{implementationfr}
+
 \section{Operadores ahuecados}
 
 \begin{designfr}
@@ -385,7 +391,7 @@ if | a * b + c - d | == e then f ! else - f
 \section{Operadores \emph{mixfijos} en acción}
 
 \begin{investigationfr}
-La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \textcite{parsing-mixfix-operators} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinemath{p} al nodo \inlinemath{q}, (\inlinemath{p \longrightarrow q}) representa que los operadores en el nodo \inlinemath{q} tienen mayor precedencia que los operadores en el nodo \inlinemath{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
+La idea de usar operadores mixfijos surgió del lenguaje de programación \emph{Agda} \cite{agda}, así que nos apoyamos en la investigación que se hizo para la implementación de estos en ese lenguaje para nuestra propia implementación. \textcite{parsing-mixfix-operators} proponen una gramática a ser derivada directamente de los operadores, asociatividades y precedencias declaradas; los pasos a seguir son (1) construir un grafo dirigido acíclico de precedencia donde un arco del nodo \inlinemath{p} al nodo \inlinemath{q}, (\inlinemath{p \longrightarrow q}) representa que los operadores en el nodo \inlinemath{q} tienen mayor precedencia que los operadores en el nodo \inlinemath{p}; (2) crear una gramática \emph{posiblemente} ambigua basada en la información del grafo. Si se utiliza la gramática presentada en el artículo con las modificaciones que proponen en los operadores definidos en \ref{lst:operatorsdefinition} se obtiene el siguiente grafo:
 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{operator-graph.pdf}
@@ -427,7 +433,7 @@ op_p^{asoc} ::=& \left( \bigvee n_1\ expr\ n_2\ expr\ \cdots\ n_k \_ \cdotp \_
                         \parbox{0.3\textwidth}{\footnotesize$n_1,\ldots,n_k$ son las partes de un operador en el nivel $p$ con la asociatividad $asoc$} \right)
 \end{split}
 \end{equation*}
-\captionof{figure}{Gramática de precedencia de operadores basada en \textcite{parsing-mixfix-operators}}
+\captionof{figure}{Gramática de precedencia de operadores basada en \cite{parsing-mixfix-operators}}
 \label{fig:mixfix-grammar}
 }
 \end{investigationfr}
@@ -435,32 +441,13 @@ op_p^{asoc} ::=& \left( \bigvee n_1\ expr\ n_2\ expr\ \cdots\ n_k \_ \cdotp \_
 \begin{implementationfr}
 En nuestra implementación del parser de operadores mixfijos, no construímos un grafo sino una \emph{lista de niveles de precedencia}, ya que la precedencia entre operadores no es asignada entre dos operadores únicamente, sino que se asigna un valor para comparación con todos los otros operadores presentes.
 
-Utilizamos \emph{Megaparsec}, una librería de \emph{combinadores de parsers} \textcite{megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
+Utilizamos \emph{Megaparsec}, una librería de \emph{combinadores de parsers} \cite{megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
 \end{implementationfr}
 
-\section{Comportamientos, ¿vale la pena?}
+\section{Comportamientos, tipos azucarados}
 
 \begin{designfr}
 En distintos lenguajes estudiados se utiliza \emph{clases de tipos}, una herramienta para introducir polimorfismo, esto es, poder utilizar un mismo identificador de función para diferentes tipos.
-
-\begin{haskellcode}
--- tiene un `forall t:Type .` implícito
-class Grupoid t where
-    (<+>) :: t -> t -> t
-
--- tiene un `forall t:Type .` implícito
-instance Grupoid [t] where
-    -- concat
-    (<+>) = concat
-        where
-            concat []     bs = bs
-            concat (a:as) bs = a : concat as bs
-
-self :: Grupoid t => t -> t
-self a = a <+> a
-
-self [1, 2]                 -- [1, 2, 1, 2]
-\end{haskellcode}
 
 \begin{haskellcode}
 -- tiene un `forall t:Type .` implícito
@@ -487,53 +474,34 @@ elem False [False, True]    -- True
 En un primer momento no se consideraron necesarias para nuestro lenguaje, aunque su facilidad de uso es innegable, porque creíamos que se podía lograr el mismo comportamiento usando tipos dependientes.
 
 \begin{anglercode}
-closed Grupoid : Type -> Type with
-        GrupoidOp : forall a:Type . (a -> a -> a) -> Grupoid a
-
-ListGrupoid : forall t:Type . Grupoid (List t)
-ListGrupoid = GrupoidOp concat
-    where
-        concat : forall t:Type . List t -> List t -> List t
-        concat Nil bs = bs
-        concat (a :: as) bs = a :: concat as bs
-
-self : forall t:Type . Grupoid t -> t -> t
-self (MonoidOp op) a = op a a
-
-self ListGrupoid (1 :: 2 :: Nil)    -- 1 :: 2 :: 1 :: 2 :: Nil
-\end{anglercode}
-
-\begin{anglercode}
 closed Eq : Type -> Type with
-    EqOp : forall t:Type . (t -> t -> Bool) -> Eq t
+    EqI : forall t:Type . (t -> t -> Bool) -> Eq t
 
-ListEq : forall t:Type . Eq (List t)
-ListEq = EqOp equal
-    where
-        equal : forall t:Type . List t -> List t -> List t
-        equal Nil Nil = True
-        equal (x :: xs) (y :: ys) = equal x y && equal xs ys
-        equal _ _ = False
+-- los operadores que define la *clase*
+equal : forall t:Type . Eq t -> t -> t -> Bool
+equal (EqI eq) = eq
+unequal : forall t:Type . Eq t -> t -> t -> Bool
+unequal (EqI eq) = not eq
 
 BoolEq : Eq Bool
-BoolEq = EqOp equal
+BoolEq = EqI op
     where
-        equal : Bool -> Bool -> Bool
-        equal True  True  = True
-        equal False False = True
-        equal _     _     = False
+        op : Bool -> Bool -> Bool
+        op True  True  = True
+        op False False = True
+        op _     _     = False
 
 elem : forall t:Type . Eq t -> t -> List t -> t
 elem _         _ Nil = False
-elem (EqOp op) x (y :: ys) = op x y || elem (EqOp op) x ys
+elem tEq x (y :: ys) = (equal tEq) x y || elem (EqI op) x ys
 
 elem BoolEq False (False :: True :: Nil)    -- True
 \end{anglercode}
 
-La mayor diferencia es que para utilizar estas funciones en nuestro lenguaje, se debe pasar la \emph{instancia} a utilizar explícitamente. De hecho, esta es una manera válida para plantear las clases de tipos (\textcite{scrap-type-classes}), como azúcar sintáctica para tipos y constructores.
+La mayor diferencia es que para utilizar estas funciones en nuestro lenguaje, se debe pasar la \emph{instancia} a utilizar explícitamente. De hecho, esta es una manera válida para plantear las clases de tipos \cite{scrap-type-classes}, como azúcar sintáctica para tipos y constructores.
 \end{designfr}
 
-\section{Comportamientos o: cómo aprendí a usar \emph{clases de tipos} y a amar el polimorfismo}
+\section{Comportamientos, o: cómo aprendí a usar \emph{clases de tipos} y a amar el polimorfismo}
 
 \begin{designfr}
 Decidimos plantear una posible sintaxis para las clases de tipos. En los lenguajes estudiados se les suele llamar \enquote{clase} (\inlinecode{class}); pero nos pareció más intuitivo llamarlas \enquote{comportamientos} (\inlinecode{behaviour}), pues es una definición de que un tipo se \emph{comporta} de cierta forma.
@@ -556,9 +524,127 @@ elem _ Nil = False
 elem x (y :: ys) = x == y || elem x ys
 \end{anglercode}
 
-TODO
-
 Se cambiaron algunos identificadores reservados, pero la definición e instanciación es equivalente a la de clases de tipos vista en otros lenguajes. Una diferencia considerable es la del requerimiento de clases, e.g. \inlinecode{Type is Eq}, ya que se pierde la traducción intuitiva con la solución de azúcar sintáctica de tipos y constructores presente en los lenguajes estudiados.
+\end{designfr}
+
+\section{Comportamientos múltiples}
+
+\begin{designfr}
+El uso de comportamientos puede facilitar mucho el uso de polimorfismo, pues no hay que pasar explícitamente las instancias a utilizar.
+
+Un problema que presentan es para los tipos que poseen más de una posible instancia de un comportamiento:
+
+\begin{anglercode}
+behaviour Semigroup on t:Type defines
+    _<+>_ : t -> t -> t
+behaviour Monoid on t : Type is Semigroup defines
+    neutral : t
+
+Nat is Semigroup with
+    _<+>_ = _+_
+
+Nat is Semigroup with
+    _<+>_ = _*_
+\end{anglercode}
+
+Para solucionar este problema conseguimos dos propuestas que ninguna nos pareció muy satisfacotira, la primera es \emph{envolver} el tipo en un constructor específicamente para la instancia.
+
+\begin{anglercode}
+closed Sum : Type with
+    NatSum : Nat -> Sum
+Sum is Semigroup with
+    NatSum a <+> NatSum b = NatSum (a + b)
+
+closed Product : Type with
+    NatProduct : Nat -> Product
+Product is Semigroup with
+    NatProduct a <+> NatProduct b = NatProduct (a * b)
+\end{anglercode}
+
+La segunda opción es \emph{instancias nombradas}, de manera que para utilizar la instancia habría que colocar su identificador para indicar la que se quiere utilizar. De esta segunda opción surgió otra propuesta, hacer \emph{alcances de instancias nombrados}, es decir, alcances donde se agrupan instancias relacionadas.
+
+\begin{anglercode}
+scope Sum with
+    Nat is Semigroup with
+        _<+>_ = _+_
+    Nat is Monoid with
+        neutral = Z
+
+scope Product with
+    Nat is Semigroup with
+        _<+>_ = _*_
+    Nat is Monoid with
+        neutral = S Z
+\end{anglercode}
+
+Igual se podrían hacer instancias en el alcance global, pero se usa cuando se necesita una instancia especial aparte de la principal, (e.g. instancias de \inlinecode{Show} en un alcance \inlinecode{AST}, para mostrar un árbol de sintaxis abstracta), o cuando hay más de una instancia válida.
+
+Este problema no existe si usamos tipos y construcores, ya que toda \emph{instancia} debe ser nombrada.
+
+\begin{anglercode}
+closed Semigroup : Type -> Type with
+    SemigroupI : forall t:Type . (t -> t -> t) -> Semigroup t
+
+append : forall t:Type . Semigroup t -> (t -> t -> t)
+append (SemigroupI op) = op
+
+closed Monoid : Type -> Type with
+    MonoidI : forall t:Type . (t -> t -> t) -> t -> Monoid t
+
+-- obtener una instancia de Monoid por una de Semigroup (*superclass*)
+Monoid'Semigroup : forall t:Type . Semigroup t -> t -> Monoid t
+Monoid'Semigroup (SemigroupI op) e = MonoidI op e
+
+mappend : forall t:Type . Monoid t -> (t -> t -> t)
+mappend (MonoidI op _) = op
+
+mempty : forall t:Type . Monoid t -> t
+mempty (MonoidI _ e) = e
+
+SumSemigroup : Semigroup Nat
+SumSemigroup = SemigroupI _+_
+SumMonoid : Monoid Nat
+SumMonoid = Monoid'Semigroup SumSemigroup Z
+
+ProductSemigroup : Semigroup Nat
+ProductSemigroup = SemigroupI _*_
+ProductMonoid : Monoid Nat
+ProductMonoid = Monoid'Semigroup ProductSemigroup (S Z)
+\end{anglercode}
+\end{designfr}
+
+\section{Comportamientos, ¿valen la pena?}
+
+\begin{designfr}
+Quedamos dudosos acerca de necesidad de comportamientos, tenemos razones a favor:
+
+\begin{itemize}
+    \item Introducen identificadores automáticamente para su uso (e.g. \inlinecode{neutral}).
+    \item Facilitan la representación de \emph{pilas de comportamientos}, es decir, la necesidad de uno para la definición de otro.
+    \item Código mucho más breve.
+    \item \#TODO.
+\end{itemize}
+
+Mientras que algunas razones en contra son:
+
+\begin{itemize}
+    \item \#TODO.
+\end{itemize}
+
+También tenemos razones a favor de usar tipos y constructores:
+
+\begin{itemize}
+    \item Código explícito sobre las \emph{instancias} a utilizar.
+    \item Pueden tener múltipes parámetros.
+    \item \#TODO.
+\end{itemize}
+
+Y en contra de usarlos:
+
+\begin{itemize}
+    \item Se prestan a código desordenado.
+    \item \#TODO.
+\end{itemize}
 \end{designfr}
 
 }
