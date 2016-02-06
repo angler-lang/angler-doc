@@ -278,6 +278,19 @@ id' _ x = x
 Además se lee \emph{\enquote{selecciona un \inlinecode{Type}, que llamaremos \inlinecode{t}}}.
 \end{designfr}
 
+\section{¿Identificador o caracter?}
+
+\begin{designfr}
+Los caracteres literales suelen escribirse usando comillas simples (\inlinecode{'}), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único \emph{símbolo} que está en ambas categorías de identificadores, la de símbolos y la de letras.
+
+\begin{anglercode}
+'a'     -- caracter
+a''     -- identificador
++''     -- identificador
+\end{anglercode}
+\end{designfr}
+
+
 \section{Identificadores: evitando confusiones}
 
 \begin{designfr}
@@ -310,22 +323,14 @@ const x _ = x
 \end{anglercode}
 \end{designfr}
 
-\section{¿Identificador o caracter?}
-
-\begin{designfr}
-Los caracteres literales suelen escribirse usando comillas simples (\inlinecode{'}), así que se decidió que ningún identificador puede empezar con una comilla simple, ya que se estaría esperando un caracter literal. Comilla simple es el único \emph{símbolo} que está en ambas categorías de identificadores, la de símbolos y la de letras.
-
-\begin{anglercode}
-'a'     -- caracter
-a''     -- identificador
-+''     -- identificador
-\end{anglercode}
-\end{designfr}
-
 \section{Escribiendo un \emph{lexer} con inspiración}
 
+\begin{investigationfr}
+El lexer de nuestro lenguaje no sería el típico caso de separar tokens e ignorar comentarios, tenemos que también obtener la información de alcances dependiendo de la indentación. Para lograr esto, nos fijamos en lenguajes que también usen indentación para definir alcances, conseguimos un parser de Python escrito en Haskell \cite{python-parser} que ayudó con algunas nociones de cómo lograr esto, pero fue GHC \cite{ghc} la mayor influencia para la escritura del lexer.
+\end{investigationfr}
+
 \begin{implementationfr}
-El lexer de nuestro lenguaje no sería el típico caso de separar tokens e ignorar comentarios, teníamos que también obtener la información de alcances.
+Se listan identificadores reservados para que reconozca el lexer y se especifica algunos que introducen un nuevo alcance, éstos \emph{esperan} una indentación mayor a la usada anteriormente y de ahí en adelante se considera el mismo alcance todo lo que esté en la indentación recién definida. Los identificadores que introducen un nuevo alcance son \inlinecode{where}, \inlinecode{let} y \inlinecode{with}.
 \end{implementationfr}
 
 \section{Operadores ahuecados}
@@ -625,7 +630,7 @@ Quedamos dudosos acerca de la necesidad de comportamientos, tenemos varias razon
     \item \#TODO.
 \end{itemize}
 
-Mientras que algunas razones en contra son:
+Mientras que algunas razones en contra de incluir comportamientos son:
 
 \begin{itemize}
     \item \#TODO.
@@ -639,7 +644,7 @@ También tenemos razones a favor de simplemente usar tipos y constructores:
     \item \#TODO.
 \end{itemize}
 
-Y razones en contra de usarlos:
+Alguns razones en contra de usar tipos y constructores para poliformismo:
 
 \begin{itemize}
     \item Se prestan para escribir código desordenado.
