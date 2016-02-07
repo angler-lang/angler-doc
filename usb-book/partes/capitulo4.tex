@@ -654,4 +654,43 @@ Alguns razones en contra de usar tipos y constructores para poliformismo:
 Por lo que decidimos que no deben formar parte del diseño oficial del lenguaje, pero que en caso de incluirlos en una implementación, se debe usar la sintaxis propuesta.
 \end{designfr}
 
+\section{Deconstrucción de expresiones con pattern matching}
+
+\begin{designfr}
+Ya habiendo terminado la implementación nos dimos cuenta de que no había cómo deconstruir una expresión para evaluar sus casos, se nos ocurrió colocar los pattern matching en un \inlinecode{where}, pero se veían muy parecidos a una definición de función, necesitamos una sintaxis que muestre su diferencia semántica. De manera que surgieron las siguientes tres opciones:
+
+\begin{anglercode}[morekeywords={pattern}]
+-- inspirado en Idris
+evenNlength : forall t:Type . List t -> Tuple Bool Nat
+evenNlength Nil = (True; Z)
+evenNlength (x :: xs)
+    with evenNlength xs
+        | (ev; ln) = (not ev; S ln)
+
+-- en `where` pero con un identificador reservado `pattern`
+evenNlength : forall t:Type . List t -> Tuple Bool Nat
+evenNlength Nil = (True; Z)
+evenNlength (x :: xs) = (not ev; S ln)
+    where
+        pattern (ev; ln) = evenNlength xs
+
+-- case-of como en Haskell
+evenNlength : forall t:Type . List t -> Tuple Bool Nat
+evenNlength Nil = (True; Z)
+evenNlength (x :: xs) =
+    case evenNlength xs of
+        (ev; ln) = (not ev; S ln)
+\end{anglercode}
+
+Ninguna de estas opciones asocia la expresión a evaluar con su tipo explícitamente, así que modificamos la sintaxis del \inlinecode{case-of}, agergando el tipo de la expresión:
+
+\begin{anglercode}
+evenNlength : forall t:Type . List t -> Tuple Bool Nat
+evenNlength Nil = (True; Z)
+evenNlength (x :: xs) =
+    case evenNlength xs : Tuple Bool Nat of
+        (ev; ln) = (not ev; S ln)
+\end{anglercode}
+\end{designfr}
+
 }
