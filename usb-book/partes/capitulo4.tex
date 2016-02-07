@@ -5,23 +5,23 @@
 \lhead{Capítulo 4. \emph{\chapterTitle}}
 
 {   % for \investigationfr, \designfr and \implementationfr to only exists here
-\newenvironment{investigationfr}
-    {\begin{coloredframe}{Investigación}{caribbeangreen}}
+\newenvironment{investigationfr}[1][]
+    {\begin{coloredframe}[#1]{Investigación}{caribbeangreen}}
     {\end{coloredframe}}
-\newenvironment{designfr}
-    {\begin{coloredframe}{Diseño}{cerulean}}
+\newenvironment{designfr}[1][]
+    {\begin{coloredframe}[#1]{Diseño}{cerulean}}
     {\end{coloredframe}}
-\newenvironment{implementationfr}
-    {\begin{coloredframe}{Implementación}{crimson}}
+\newenvironment{implementationfr}[1][]
+    {\begin{coloredframe}[#1]{Implementación}{crimson}}
     {\end{coloredframe}}
 
-\begin{investigationfr}
+\begin{investigationfr}[frametitlerule=false]
 \end{investigationfr}
 
-\begin{designfr}
+\begin{designfr}[frametitlerule=false]
 \end{designfr}
 
-\begin{implementationfr}
+\begin{implementationfr}[frametitlerule=false]
 \end{implementationfr}
 
 \section{Ideas iniciales}
@@ -200,7 +200,7 @@ isUSD (XBT _) = True    -- este caso nunca correrá
 \end{anglercode}
 \end{designfr}
 
-\section{Identificadores, ¿mayúscuas o minúsculas?}
+\section{Identificadores, ¿mayúsculas, minúsculas, ambas?}
 
 \begin{designfr}
 En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
@@ -208,7 +208,7 @@ En un principio se consideró usar la convención de Haskell, que los constructo
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente. Finalmente decidimos que no habrá diferencia semántica entre identificadores que comiencen con mayúscula o minúscula.
 \end{designfr}
 
-\section{Cuantificadores: parámetros y argumentos implícitos}
+\section{Cuantificadores, parámetros y argumentos implícitos}
 
 \begin{designfr}
 Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente definido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte \emph{implícita}, que es el cuantificador universal; y la parte \emph{explícita}:
@@ -265,14 +265,14 @@ Nos dimos cuenta de que podemos querer introducir nombres para parámetros expl�
 
 \begin{anglercode}
 id' : (t : Type) -> t -> t
-id' _ x = x
+id' t x = x
 \end{anglercode}
 
 Se entiende, pero nos pareció poco intuitivo, así que preferimos agregarle la palabra \inlinecode{select} para hacer obvio que se acerca al funcionamiento de los cuantificadores.
 
 \begin{anglercode}
 id' : (select t : Type) -> t -> t
-id' _ x = x
+id' t x = x
 \end{anglercode}
 
 Además se lee \emph{\enquote{selecciona un \inlinecode{Type}, que llamaremos \inlinecode{t}}}.
@@ -291,7 +291,7 @@ a''     -- identificador
 \end{designfr}
 
 
-\section{Identificadores: evitando confusiones}
+\section{Identificadores, evitando confusiones}
 
 \begin{designfr}
 Desde un principio se aceptó la idea de poder usar símbolos en los identificadores como \inlinecode{+}, \inlinecode{*} y demás, pero para facilitar el uso del lenguaje, se decidió que tendríamos dos categorías de caracteres, una para símbolos y otra para letras. De manera que ciertos caracteres, a pesar de estar juntos, se tomarían como identificadores separados:
@@ -305,19 +305,19 @@ var++v0     -- var ++ v0
 \end{anglercode}
 \end{designfr}
 
-\section{No me importa, te lo digo en inglés, I \emph{don't care}}
+\section{No me importa; es más, te lo digo en inglés, I \emph{don't care}}
 
 \begin{designfr}
-En una función puede haber casos en que un argumento no es importante para su valor resultante, a estos argumentos se les puede asignar un nombre que no usaremos, o indicar explícitamente que no es importante.
+En una función puede haber casos en que un argumento no es importante para su valor resultante, a estos argumentos se les puede asignar un nombre que no usaremos, o indicar explícitamente que no es importante con algún identificador, a éste se le suele llamar \emph{don't care}.
 
-\begin{anglercode}
+\begin{anglercode}[alsoletter={?},morekeywords={?}]
 const : forall t:Type, v:Type . t -> v -> t
 const x ? = x
 \end{anglercode}
 
 Donde el caracter \inlinecode{?} indica que no importa ese valor, luego se decidió cambiar este caracter a \inlinecode{\_}, ya que el signo de interrogación puede transmitir la idea de que \emph{no sabemos} qué será el argumento, cuando lo que se quiere transmitir es que \emph{no importa}. Se eligió \inlinecode{\_} porque es el caracter típicamente usado por otros lenguajes para lo miso, y visualmente, al llamar tan poco la atención transmite su poca importancia.
 
-\begin{anglercode}
+\begin{anglercode}[morekeywords={\_}]
 const : forall t:Type, v:Type . t -> v -> t
 const x _ = x
 \end{anglercode}
@@ -363,9 +363,9 @@ Nótese que se usa \inlinecode{\_} tanto para \emph{don't care} como para los hu
 Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un \inlinecode{\_} de por medio.
 
 \begin{anglercode}
-if_?_:_ : forall t:Type . Bool -> t -> t -> t
-if True  ? x : _ = x
-if False ? _ : y = y
+if_??_:_ : forall t:Type . Bool -> t -> t -> t
+if True  ?? x : _ = x
+if False ?? _ : y = y
 \end{anglercode}
 \end{designfr}
 
@@ -449,10 +449,10 @@ En nuestra implementación del parser de operadores mixfijos, no construímos un
 Utilizamos \emph{Megaparsec}, una librería de \emph{combinadores de parsers} \cite{megaparsec}, y a partir de la lista de precedencias y la gramática \ref{fig:mixfix-grammar}, se genera un parser que \emph{reorganiza las expresiones en una lista de expresiones} y las analiza recursivamente. En un princpio el parser resultante podía ser muy lento si habían muchas definiciones de operadores en el programa, así que se hace un análisis previo del nivel de la lista de expresiones para incluir únicamente operadores que \emph{alguna de sus partes} esté en ésta, y se analiza antes de cada nivel para incluir los operadores adecuados por separado; logrando así unos resultados de tiempo aceptables.
 \end{implementationfr}
 
-\section{Comportamientos, tipos azucarados}
+\section{Clases de tipos, tipos y constructores azucarados}
 
 \begin{designfr}
-En distintos lenguajes estudiados se utiliza \emph{clases de tipos}, una herramienta para introducir polimorfismo, esto es, poder utilizar un mismo identificador de función para diferentes tipos.
+En distintos lenguajes estudiados se utiliza \emph{clases de tipos}, una herramienta para introducir polimorfismo, esto es, poder utilizar un mismo identificador de función para diferentes tipos. Aquí se presenta un ejemplo en Haskell \cite{haskell}.
 
 \begin{haskellcode}
 -- tiene un `forall t:Type .` implícito
@@ -657,7 +657,7 @@ Por lo que decidimos que no deben formar parte del diseño oficial del lenguaje,
 \section{Deconstrucción de expresiones con pattern matching}
 
 \begin{designfr}
-Ya habiendo terminado la implementación nos dimos cuenta de que no había cómo deconstruir una expresión para evaluar sus casos, se nos ocurrió colocar los pattern matching en un \inlinecode{where}, pero se veían muy parecidos a una definición de función, necesitamos una sintaxis que muestre su diferencia semántica. De manera que surgieron las siguientes tres opciones:
+Ya habiendo avanzado bastante en la implementación nos dimos cuenta de que no había cómo deconstruir una expresión para evaluar sus casos, se nos ocurrió colocar los pattern matching en un \inlinecode{where}, pero se veían muy parecidos a una definición de función, necesitamos una sintaxis que muestre la diferencia de semántica. De manera que surgieron las siguientes tres opciones:
 
 \begin{anglercode}[morekeywords={pattern}]
 -- inspirado en Idris
