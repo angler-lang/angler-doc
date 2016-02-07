@@ -325,12 +325,54 @@ const x _ = x
 
 \section{Escribiendo un \emph{lexer} con inspiración}
 
+\begin{designfr}
+El lexer de nuestro lenguaje no sería el típico caso de separar tokens e ignorar comentarios, tenemos que obtener la información de alcances dependiendo de la indentación, caracteres literales, cadenas de caracteres, números literales e incluimos anidación de comentarios. Los tabuladores (\emph{tabs}) son equivalentes a cuatro (4) espacios.
+\end{designfr}
+
 \begin{investigationfr}
-El lexer de nuestro lenguaje no sería el típico caso de separar tokens e ignorar comentarios, tenemos que también obtener la información de alcances dependiendo de la indentación. Para lograr esto, nos fijamos en lenguajes que también usen indentación para definir alcances, conseguimos un parser de Python escrito en Haskell \cite{python-parser} que ayudó con algunas nociones de cómo lograr esto, pero fue GHC \cite{ghc} la mayor influencia para la escritura del lexer.
+Para lograr esto, nos fijamos en lenguajes que también usen indentación para definir alcances, conseguimos un parser de Python escrito en Haskell \cite{python-parser} que ayudó con algunas nociones de cómo lograr esto, pero el lexer de GHC \cite{ghc} fue la mayor influencia para la escritura del lexer.
 \end{investigationfr}
 
 \begin{implementationfr}
-Se listan identificadores reservados para que reconozca el lexer y se especifica algunos que introducen un nuevo alcance, éstos \emph{esperan} una indentación mayor a la usada anteriormente y de ahí en adelante se considera el mismo alcance todo lo que esté en la indentación recién definida. Los identificadores que introducen un nuevo alcance son \inlinecode{where}, \inlinecode{let} y \inlinecode{with}.
+Se listan identificadores reservados para que reconozca el lexer y se especifica algunos que introducen un nuevo alcance, éstos \emph{esperan} una indentación mayor a la usada anteriormente y de ahí en adelante se considera el mismo alcance todo lo que esté en la indentación recién definida. Los identificadores que introducen un nuevo alcance son \inlinecode{where}, \inlinecode{let}, \inlinecode{with} y \inlinecode{of}.
+
+Se reportan errores por caracteres literales inválidos y comentarios de bloque que no fueron cerrados. También se generan advertencias cuando el código contiene tabuladores (\emph{tabs}), pues pueden considerarse una mala práctica cuando la indentación afecta un programa.
+
+Los comentarios anidados se llevarón a cabo manteniendo una pila de estados del lexer, donde al conseguir un \inlinecode{\{-}, sin importar qué estado esté en el tope la pila, se empila un estado indicando que está en un comentario, y al conseguir un \inlinecode{-\}} con un estado de comentario en el tope, se desempila éste.
+
+Tomamos de GHC la idea de que una línea con indentación mayor a la anterior indica que se debe tomar como la misma línea. Un ejemplo donde se refleja el funcionamiento; no es código válido para el lenguaje:
+
+\begin{anglercode}[deletekeywords={as}]
+top1 where
+        scope1
+        scope2
+            same line as scope2
+    same line as top1
+top2 where
+    scope3
+top3
+    same line as top3
+
+{-
+    {-
+        {^ y ^} indican un alcance
+        ^;      indica una línea nueva
+        <eof>   indica el final del archivo
+    -}
+
+    La salida del lexer:
+    {^
+        top1 where {^
+            scope1 ^;
+            scope2 same line as scope2
+        ^} same line as top1 ^;
+        top2 where {^
+            scope3
+        ^} ^;
+        top3 same line as top3
+    ^} <eof>
+-}
+\end{anglercode}
 \end{implementationfr}
 
 \section{Operadores ahuecados}
