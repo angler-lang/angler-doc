@@ -72,19 +72,24 @@
 % compact itemize
 \setlist[itemize]{nosep}
 
-% Para colocar un margen a la izquierda
-\newmdenv[
+% Marco de color con título
+\newenvironment{coloredframe}[3][]{
+    \mdfsetup{
         hidealllines=true,
-        leftline=true,topline=true,
-        frametitleaboveskip=-5pt,
+        leftline=true,%topline=true,
+        % frametitleaboveskip=-5pt,
+        frametitlerule=true,
+        frametitlerulewidth=.25pt,
         linewidth=1.5pt,
-    ]{leftframe}
-
-\newenvironment{coloredframe}[2]{
-    \mdfsetup{frametitle={\colorbox{white}{\space#1\space}},linecolor=#2}
-    \begin{leftframe}
+        frametitle={\colorbox{white}{\space#2\space}},
+        frametitle={#2},
+        linecolor=#3,
+        frametitlebackgroundcolor=#3!10,
+        #1
+    }
+    \begin{mdframed}
 }{
-    \end{leftframe}
+    \end{mdframed}
 }
 
 % greens
@@ -116,8 +121,8 @@
         [2]\_, [2](, [2]), [2]\{, [2]\}
     },
     sensitive=true,                 % keywords are case-sensitive
-    morecomment=[l]{\-\-},          % line comments
-    morecomment=[s]{\{\-}{\-\}},    % block comments
+    morecomment=[l]{\-\-},          % [l]ine comments
+    morecomment=[n]{\{\-}{\-\}},    % [n]ested block comments
     morestring=[b]",                % strings are in double quotes
     morestring=[d]',                % characters are in single quotes
 }
@@ -159,7 +164,7 @@
     \lstset{
         language=angler,
         style=code,
-        #1                                  % settings for the lst environment
+        #1                  % settings for the lst environment
     }
 }{}
 
@@ -167,8 +172,14 @@
     \linespread{1}
     \lstset{
         language=haskell,
+        keywords={          % taken from wiki.haskell.org/Keywords
+            as, case, class, data, default, deriving, do, else, family, forall,
+            foreign, hiding, if, import, in, infix, infixl, infixr, instance,
+            let, mdo, module, newtype, of, proc, qualified, rec, then, type,
+            where
+        },
         style=code,
-        #1                                  % settings for the lst environment
+        #1                  % settings for the lst environment
     }
 }{}
 
