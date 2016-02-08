@@ -526,6 +526,7 @@ Utilizamos la herramienta \emph{Happy} \cite{happy} para la generación del anal
 \newcommand{\scolon}{\widehat{;}}
 
 \allowdisplaybreaks
+\footnotesize
 \begin{align*}
 \maybe{\emph{p}} ::=& \_ \lambda \_ | \_ \emph{p}
 \\
@@ -545,9 +546,9 @@ Utilizamos la herramienta \emph{Happy} \cite{happy} para la generación del anal
 Module ::=& \_ \scope{Top \_ Body}
 \\
 \\
-Top ::=& \_ \maybe{Export} \_ \listZ{Import}
+Top ::=& \_ \lt{module} \_ Id \_ \maybe{Export} \_ \listZ{Import}
 \\
-Export ::=& \_ \lt{export} \_ \parens{\listSepZ{Id}{\lt{,}}}
+Export ::=& \_ \lt{exports} \_ \parens{\listSepZ{Id}{\lt{,}}}
 \\
 Import ::=& \_ \lt{import} \_ Id \_ \maybe{as \_ Id} \_
     \maybe{\parens{\listSepZ{Id}{\lt{,}}}}
@@ -665,6 +666,8 @@ Como podemos ver, se obtiene un grafo de precedencia lineal, ya que en nuestro l
 \renewcommand{\emph}[1]{\textbf{\textit{#1}}}
 \renewcommand{\_}{\:\:}
 
+\allowdisplaybreaks
+\footnotesize
 \begin{align*}
 expr ::=
     & \left( \bigvee \_ \hat{p} \_ \cdotp \_
@@ -698,7 +701,7 @@ op_p^{\emph{asoc}} ::=
         \parbox{0.3\textwidth}{\footnotesize$n_1,\ldots,n_k$ son las partes de un operador en el nivel $p$ con la asociatividad $asoc$} \right)
 \\
 \emph{p}^{+} ::=
-    & \_ \emph{p}
+    & \_ \emph{p} \_
     | \_ \emph{p}^{+} \_ \emph{p} \_
 \end{align*}
 \captionof{figure}{Gramática de precedencia de operadores basada en \cite{parsing-mixfix-operators}}
