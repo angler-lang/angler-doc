@@ -381,6 +381,146 @@ top3
 \end{anglercode}
 \end{implementationfr}
 
+\section{Escribiendo el \emph{parser}}
+
+\begin{implementationfr}
+Utilizamos la herramienta \emph{Happy} \cite{happy} para la generación del analizador sintáctico. Es la etapa que sigue al análisis léxico. Se reportan errores considerados \emph{comunes} con una explicación, los que no se consideraron simplemente reportan un error de \emph{parseo}.
+
+{   % for the commands to only exist here
+\renewcommand{\emph}[1]{\textbf{\textit{#1}}}
+\renewcommand{\_}{\:\:}
+
+\newcommand{\maybe}[1]{\left[ \_ #1 \_ \right]}
+\newcommand{\listZ}[1]{#1^{*}}
+\renewcommand{\list}[1]{#1^{+}}
+\newcommand{\listSepZ}[2]{#1^{* [ \_ #2 \_ ]}}
+\newcommand{\listSep}[2]{#1^{+ [ \_ #2 \_ ]}}
+
+% literal
+\newcommand{\lt}[1]{\textbf{\color{darkcandyapplered}\text{#1}}}
+
+\newcommand{\scope}[1]{\widehat{\{} \_ #1 \_ \widehat{\}}}
+\newcommand{\parens}[1]{\lt{(} \_ #1 \_ \lt{)}}
+\newcommand{\scolon}{\widehat{;}}
+
+\allowdisplaybreaks
+\begin{align*}
+\maybe{\emph{p}} ::=& \_ \lambda \_ | \_ \emph{p}
+\\
+\list{\emph{p}} ::=& \_ \emph{p} \_ | \_ \emph{p}^{+} \_ \emph{p}
+\\
+\listZ{\emph{p}} ::=& \_ \lambda \_ | \_ \emph{p}^{+}
+\\
+\listSep{\emph{p}}{\emph{sep}} ::=
+    & \_ \emph{p} \_
+    | \_ \listSep{\emph{p}}{\emph{sep}} \_ \emph{sep} \_ \emph{p}
+\\
+\listSepZ{\emph{p}}{\emph{sep}} ::=
+    & \_ \lambda \_
+    | \_ \listSep{\emph{p}}{\emph{sep}}
+\\
+\\
+Module ::=& \_ \scope{Top \_ Body}
+\\
+\\
+Top ::=& \_ \maybe{Export} \_ \listZ{Import}
+\\
+Export ::=& \_ \lt{export} \_ \parens{\listSepZ{Id}{\lt{,}}}
+\\
+Import ::=& \_ \lt{import} \_ Id \_ \maybe{as \_ Id} \_
+    \maybe{\parens{\listSepZ{Id}{\lt{,}}}}
+\\
+\\
+Body ::=& \_ \list{Stmt}
+\\
+Stmt ::=
+     & \_ TypeBind
+\\
+    |& \_ FuncDef
+\\
+    |& \_ \lt{open} \_ TypeBind \_
+        \maybe{ \lt{with} \_ \scope{\list{TypeBind}} }
+\\
+    |& \_ \lt{reopen} \_ Id \_  \lt{with} \_
+        \scope{\list{TypeBind}}
+\\
+    |& \_ \lt{closed} \_ TypeBind \_  \lt{with} \_
+        \scope{\list{TypeBind}}
+\\
+    |& \_ \lt{operator} \_ Id \_ \lt{prefix}  \_ Nat
+\\
+    |& \_ \lt{operator} \_ Id \_ \lt{postfix} \_ Nat
+\\
+    |& \_ \lt{operator} \_ Id \_ \lt{infixL}  \_ Nat
+\\
+    |& \_ \lt{operator} \_ Id \_ \lt{infixR}  \_ Nat
+\\
+    |& \_ \lt{operator} \_ Id \_ \lt{infixN}  \_ Nat
+\\
+    |& \_ \lt{operator} \_ Id \_ \lt{closed}
+% \\
+%     |& \_ \lt{open} \_ \lt{scope} \_ Id \_
+%         \maybe{\lt{with} \_ \list{BehaviourDef}}
+% \\
+%     |& \_ \lt{reopen} \_ \lt{scope} \_ Id \_ \lt{with} \_ \list{BehaviourDef}
+% \\
+%     |& \_ \lt{closed} \_ \lt{scope} \_ Id \_ \lt{with} \_ \list{BehaviourDef}
+% \\
+%     |& \_ \lt{behaviour} \_ Id \_ \lt{on} \_ TypeBind \_ \lt{defines} \_
+%         \scope{\list{TypeBind}}
+% \\
+%      & \_\_\_\_ \maybe{\lt{with} \_ \scope{\list{FuncDef}}}
+% \\
+%     |& \_ BehaviourDef
+\\
+\\
+TypeBind ::=& \_ Id \_ \lt{:} \_ Expr
+\\
+FuncDef ::=& \_ \list{Argument} \_ \lt{=} \_ Expr
+% \\
+% BehaviourDef ::= & \_ Id \_ \lt{is} \_ Id \_ \lt{with} \_ \scope{\list{FuncDef}}
+\\
+Argument ::=
+    & \_ \lt{\textunderscore} \_ | \_ Id \_ | \_ \parens{\list{Argument}}
+\\
+\\
+Expr ::=& \_ Expr' \_ \maybe{\lt{where} \_ Body}
+\\
+Expr' ::=
+     & \_ \lt{\textbackslash} \_ \list{Argument} \_ \lt{->} \_ Expr'
+\\
+    |& \_ \lt{let} \_ \scope{Body} \_ \lt{in} \_ Expr'
+\\
+    |& \_ \lt{forall} \_ \listSep{TypeBind}{\lt{,}} \_ \lt{.} \_ Expr'
+\\
+    |& \_ \lt{exists} \_ TypeBind \_ \lt{.} \_ Expr'
+\\
+    |& \_ \lt{select} \_ TypeBind
+\\
+    |& \_ Term \_ Expr'
+\\
+    |& \_ Term
+\\
+Term ::=
+     & \_ Id \_ | \_ Literal \_ | \_ \parens{Expr} \_
+     | \_ \lt{\{} \_ \listSep{(Id \_ \lt{=} \_ Expr)}{\lt{,}} \_ \lt{\}}
+\\
+Literal ::=& \_ Nat \_ | \_ Char \_ | \_ String
+\\
+Nat ::=& \_ \left<natural \_ number \_ literal\right>
+\\
+Char ::=& \_ \left<character \_ literal\right>
+\\
+String ::=& \_ \left<string \_ literal\right>
+\\
+Id ::=& \_ \left<identifier\right>
+\end{align*}
+\captionof{figure}{Gramática final del analizador sintáctico}
+\label{fig:parser-grammar}
+}
+
+\end{implementationfr}
+
 \section{Operadores ahuecados}
 
 \begin{designfr}
