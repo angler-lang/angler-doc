@@ -456,7 +456,7 @@ Stmt ::=
     |& \_ \lt{operator} \_ Id \_ \lt{infixN}  \_ Nat
 \\
     |& \_ \lt{operator} \_ Id \_ \lt{closed}
-% \\
+\\
 %     |& \_ \lt{open} \_ \lt{scope} \_ Id \_
 %         \maybe{\lt{with} \_ \list{BehaviourDef}}
 % \\
@@ -470,14 +470,14 @@ Stmt ::=
 %      & \_\_\_\_ \maybe{\lt{with} \_ \scope{\list{FuncDef}}}
 % \\
 %     |& \_ BehaviourDef
-\\
+% \\
 \\
 TypeBind ::=& \_ Id \_ \lt{:} \_ Expr
 \\
 FuncDef ::=& \_ \list{Argument} \_ \lt{=} \_ Expr
-% \\
-% BehaviourDef ::= & \_ Id \_ \lt{is} \_ Id \_ \lt{with} \_ \scope{\list{FuncDef}}
 \\
+% BehaviourDef ::= & \_ Id \_ \lt{is} \_ Id \_ \lt{with} \_ \scope{\list{FuncDef}}
+% \\
 Argument ::=
     & \_ \lt{\textunderscore} \_ | \_ Id \_ | \_ \parens{\list{Argument}}
 \\
@@ -485,8 +485,9 @@ Argument ::=
 Expr ::=& \_ Expr' \_ \maybe{\lt{where} \_ Body}
 \\
 Expr' ::=
-     & \_ \lt{\textbackslash} \_ \list{Argument} \_ \lt{->} \_ Expr'
-\\
+%      & \_ \lt{\textbackslash} \_ \list{Argument} \_ \lt{:} \_ Expr \_
+%         \lt{=} \_ Expr'
+% \\
     |& \_ \lt{let} \_ \scope{Body} \_ \lt{in} \_ Expr'
 \\
     |& \_ \lt{forall} \_ \listSep{TypeBind}{\lt{,}} \_ \lt{.} \_ Expr'
@@ -495,13 +496,16 @@ Expr' ::=
 \\
     |& \_ \lt{select} \_ TypeBind
 \\
+    |& \_ \lt{case} \_ Expr' \_ \lt{:} \_ Expr \_ \lt{of} \_
+        \scope{\list{FuncDef}}
+\\
     |& \_ Term \_ Expr'
 \\
     |& \_ Term
 \\
 Term ::=
-     & \_ Id \_ | \_ Literal \_ | \_ \parens{Expr} \_
-     | \_ \lt{\{} \_ \listSep{(Id \_ \lt{=} \_ Expr)}{\lt{,}} \_ \lt{\}}
+    & \_ Id \_ | \_ Literal \_ | \_ \parens{Expr} \_
+    | \_ \lt{\{} \_ \listSep{(Id \_ \lt{=} \_ Expr)}{\lt{,}} \_ \lt{\}}
 \\
 Literal ::=& \_ Nat \_ | \_ Char \_ | \_ String
 \\
@@ -846,10 +850,32 @@ Alguns razones en contra de usar tipos y constructores para poliformismo:
     \item \#TODO.
 \end{itemize}
 
-Por lo que decidimos que no deben formar parte del diseño oficial del lenguaje, pero que en caso de incluirlos en una implementación, se debe usar la sintaxis propuesta.
+Por lo que decidimos que no deben formar parte del diseño principal del lenguaje, pero que en caso de incluirlos en una implementación, se debe usar la sintaxis propuesta.
 \end{designfr}
 
-\section{Deconstrucción de expresiones con pattern matching}
+\section{Lamda funciones explícitas}
+
+\begin{designfr}
+Las lambda funciones es una de las construcciones clásicas de los lenguajes de programación funcional, nos parecía obvio que debían estar en el diseño, pero suelen ser presentadas en los lenguajes estudiados sin asociación de tipos a los argumentos ni a su tipo; como buscamos un lenguaje explícito, esto iba en contra de la filosofía que presenta el lenguaje en el resto del diseño.
+
+\begin{anglercode}
+\ x y = x :: y :: Nil       -- ¿de qué tipo es la función?
+\end{anglercode}
+
+Así que propusimos diversas sintaxis para usar en el lenguaje:
+
+\begin{anglercode}
+-- anotación por argumento y salida
+\ (x : Nat) (y : Nat) : List Nat = x :: y :: Nil
+
+-- anotación de la función completa
+\ x y : Nat -> Nat -> List Nat = x :: y :: Nil
+\end{anglercode}
+
+Pero ninguna nos convenció, así que decidimos que las lambdas funciones tampoco deben formar parte del diseño principal del lenguaje, pero que en caso de incluirlas en un implementación, se debe usar la sintaxis de \emph{anotación de la función completa}.
+\end{designfr}
+
+\section{Deconstrucción de expresiones con pattern matching y análisis por caso}
 
 \begin{designfr}
 Ya habiendo avanzado bastante en la implementación nos dimos cuenta de que no había cómo deconstruir una expresión para evaluar sus casos, se nos ocurrió colocar los pattern matching en un \inlinecode{where}, pero se veían muy parecidos a una definición de función, necesitamos una sintaxis que muestre la diferencia de semántica. De manera que surgieron las siguientes tres opciones:
@@ -877,14 +903,15 @@ evenNlength (x :: xs) =
         (ev; ln) = (not ev; S ln)
 \end{anglercode}
 
-Ninguna de estas opciones asocia la expresión a evaluar con su tipo explícitamente, así que modificamos la sintaxis del \inlinecode{case-of}, agergando el tipo de la expresión:
+La opción del \inlinecode{where} fue descartada pues no se pueden representar distintos casos para un patrón, la opción del \inlinecode{with} fue descartada porque sólo funcionaría al principio de una definición de función, dejando como la única opción viable la de \inlinecode{case-of}. Ninguna de estas opciones asocia la expresión a evaluar con su tipo explícitamente, así que modificamos la sintaxis del \inlinecode{case-of}, agergando el tipo de la expresión:
 
 \begin{anglercode}
 evenNlength : forall t:Type . List t -> Tuple Bool Nat
 evenNlength Nil = (True; Z)
 evenNlength (x :: xs) =
     case evenNlength xs : Tuple Bool Nat of
-        (ev; ln) = (not ev; S ln)
+        (True ; ln) = (False; S ln)
+        (False; ln) = (True ; S ln)
 \end{anglercode}
 \end{designfr}
 
