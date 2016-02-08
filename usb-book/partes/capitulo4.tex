@@ -325,6 +325,130 @@ const x _ = x
 \end{anglercode}
 \end{designfr}
 
+\section{Operadores ahuecados}
+
+\begin{designfr}
+Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy \emph{empinada}, por lo que la posibilidad de definir operadores es escencial. Se propuso usar \emph{operadores mixfijos}, estos funcionan para definir las \emph{partes} de un operador y sus \emph{huecos}, que es donde irían sus operandos; para indicar los huecos de un operador, usaremos el caracter piso (\inlinecode{\_}).
+
+\begin{anglercode}
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if True  then x else _ = x
+if False then _ else y = y
+\end{anglercode}
+
+Esto nos crea una restricción sobre los identificadores, estos no pueden contener dos \inlinecode{\_} seguidos, ya que no sabríamos dónde termina un argumento y comienza el siguiente.
+
+Un identificador con \inlinecode{\_} puede usarse como operador, colocando los argumentos en los huecos, o como una función normal escribiendo el identificador con los \inlinecode{\_} incluidos.
+
+\begin{anglercode}
+if_then_else_ : forall t:Type . Bool -> t -> t -> t
+if_then_else_ True  x _ = x
+if_then_else_ False _ y = y
+\end{anglercode}
+
+Nótese que se usa \inlinecode{\_} tanto para \emph{don't care} como para los huecos de los identificadores, e.g. \inlinecode{if\_then\_else\_\ False\ \_\ y}.
+\end{designfr}
+
+\section{Huecos entre identificadores}
+
+\begin{designfr}
+Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un \inlinecode{\_} de por medio.
+
+\begin{anglercode}
+if_??_:_ : forall t:Type . Bool -> t -> t -> t
+if True  ?? x : _ = x
+if False ?? _ : y = y
+\end{anglercode}
+\end{designfr}
+
+\section{Definición de operadores}
+
+\begin{designfr}
+En un principio se consideró que si un identificador tiene \inlinecode{\_} se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, o está definido o no. Lo que se expresa es una regla de \emph{reordenamiento} de identificadores.
+
+\begin{anglercode}[label=lst:operatorsdefinition]
+operator |_|                closed
+operator if_then_else_      prefix  0
+operator _==_               infixN  2
+operator _+_                infixL  4
+operator _-_                infixL  4
+operator _*_                infixL  5
+operator _/_                infixL  5
+operator _^_                infixR  6
+operator -_                 prefix  7
+operator _!                 postfix 8
+
+-- ...
+
+if | a * b + c - d | == e then f ! else - f
+-- if_then_else_ (_==_ (|_| (_-_ (_+_ (_*_ a b) c) d)) e) (_! f) (-_ f)
+\end{anglercode}
+\end{designfr}
+
+\section{Módulos: importación}
+
+\begin{designfr}
+Los módulos son una gran ayuda para la organización de código, permite seprar un conjunto de funciones relacionadas independiente de otro.
+
+Para la importación se coloca la opción de hacer importar los nombres de manera cualificada, esto es, anexando un identificador a todos los identificadores importados de un módulo:
+
+\begin{anglercode}
+import Nat as N         -- N.Nat, N.Z, N.S, N._+_, N.even, N.odd, ...
+\end{anglercode}
+
+También se debe poder limitar la lista de cosas a importar:
+
+\begin{anglercode}
+import Nat (Nat, Z, S, _+_, odd)
+\end{anglercode}
+
+Pero una duda que nos dejó pensativos es si importar un módulo también introduce sus operadores en el módulo actual, nos pareció que esto debía hacerce de manera explícita, pues puede generar comportamientos inesperados si no:
+
+\begin{anglercode}
+import Nat (Nat, Z, S, _+_, odd, operator _+_)
+\end{anglercode}
+
+Y esto nos puso a pensar que sería interesante hacer lo que se importa más explícito aún, que con tan solo ver esa línea puedes saber más o menos de qué se trata, sin tener que revisar el módulo en cuestión. Así que se debe indicar qué tipo de elemento se está importando también:
+
+\begin{anglercode}
+-- N.Nat, N.Z, N.S, N._+_, N.Command
+import Nat (closed Nat(Z, S), _+_, operator _+_, open Command) as N
+
+reopen N.Command with
+    Jump : N.Nat -> N.Command
+\end{anglercode}
+\end{designfr}
+
+\section{Módulos: exportación}
+
+\begin{designfr}
+La exportación debía entonces seguir la misma idea en su de identificadores. Se asume que si no se declara una línea de exportación, se exportan todos los contenidos del módulo.
+
+\begin{anglercode}[morekeywords={export}]
+export (closed Nat(Z, S), _+_, operator _+_, open Command(Print))
+
+closed Nat : Type with
+    Z : Nat
+    S : Nat -> Nat
+
+operator _+_ infixL 4
+_+_ : Nat -> Nat -> Nat
+Z + n = n
+S m + n = S (m + n)
+
+open Command : Type with
+    Print : String -> Command
+\end{anglercode}
+
+El único problema con esta sintaxis de exportación es que no sabemos cómo se llama el archivo con ver el código, que es importante porque se importan módulos con el nombre del archivo. Se agregó el nombre del módulo:
+
+\begin{anglercode}
+module Nat exports (closed Nat(Z, S), _+_, operator _+_, open Command(Print))
+\end{anglercode}
+
+En caso de querer exportar el módulo completo, se debe iniciar igual con el nómbre del módulo (e.g. \inlinecode{module Nat}).
+\end{designfr}
+
 \section{Escribiendo un \emph{lexer} con inspiración}
 
 \begin{designfr}
@@ -522,66 +646,6 @@ Id ::=& \_ \left<identifier\right>
 }
 
 \end{implementationfr}
-
-\section{Operadores ahuecados}
-
-\begin{designfr}
-Un lenguaje didáctico sin operadores puede hacer curva de aprendizaje muy \emph{empinada}, por lo que la posibilidad de definir operadores es escencial. Se propuso usar \emph{operadores mixfijos}, estos funcionan para definir las \emph{partes} de un operador y sus \emph{huecos}, que es donde irían sus operandos; para indicar los huecos de un operador, usaremos el caracter piso (\inlinecode{\_}).
-
-\begin{anglercode}
-if_then_else_ : forall t:Type . Bool -> t -> t -> t
-if True  then x else _ = x
-if False then _ else y = y
-\end{anglercode}
-
-Esto nos crea una restricción sobre los identificadores, estos no pueden contener dos \inlinecode{\_} seguidos, ya que no sabríamos dónde termina un argumento y comienza el siguiente.
-
-Un identificador con \inlinecode{\_} puede usarse como operador, colocando los argumentos en los huecos, o como una función normal escribiendo el identificador con los \inlinecode{\_} incluidos.
-
-\begin{anglercode}
-if_then_else_ : forall t:Type . Bool -> t -> t -> t
-if_then_else_ True  x _ = x
-if_then_else_ False _ y = y
-\end{anglercode}
-
-Nótese que se usa \inlinecode{\_} tanto para \emph{don't care} como para los huecos de los identificadores, e.g. \inlinecode{if\_then\_else\_\ False\ \_\ y}.
-\end{designfr}
-
-\section{Huecos entre identificadores}
-
-\begin{designfr}
-Gracias a la nueva sintaxis para operadores, se decidió que un las partes distintas de un identificador podrían ser de distintas categorías, es decir, pudiendo mezclarlas sólo cuando hay un \inlinecode{\_} de por medio.
-
-\begin{anglercode}
-if_??_:_ : forall t:Type . Bool -> t -> t -> t
-if True  ?? x : _ = x
-if False ?? _ : y = y
-\end{anglercode}
-\end{designfr}
-
-\section{Definición de operadores}
-
-\begin{designfr}
-En un principio se consideró que si un identificador tiene \inlinecode{\_} se consideraría automáticamente un operador y tendría una precedencia y asociatividad por defecto, pero decidimos abandonar esa idea, pues podría generar comportamientos inesperados por usuarios. Así que llegamos a una definición para estos, donde no importa si el identificador es de una función o no, o está definido o no. Lo que se expresa es una regla de \emph{reordenamiento} de identificadores.
-
-\begin{anglercode}[label=lst:operatorsdefinition]
-operator |_|                closed
-operator if_then_else_      prefix  0
-operator _==_               infixN  2
-operator _+_                infixL  4
-operator _-_                infixL  4
-operator _*_                infixL  5
-operator _/_                infixL  5
-operator _^_                infixR  6
-operator -_                 prefix  7
-operator _!                 postfix 8
-
--- ...
-
-if | a * b + c - d | == e then f ! else - f
--- if_then_else_ (_==_ (|_| (_-_ (_+_ (_*_ a b) c) d)) e) (_! f) (-_ f)
-\end{anglercode}
-\end{designfr}
 
 \section{Operadores \emph{mixfijos} en acción}
 
