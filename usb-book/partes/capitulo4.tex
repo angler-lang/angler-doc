@@ -208,7 +208,7 @@ En un principio se consideró usar la convención de Haskell, que los constructo
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente. Finalmente decidimos que no habrá diferencia semántica entre identificadores que comiencen con mayúscula o minúscula.
 \end{designfr}
 
-\section{El cuantificador universal, parámetros y argumentos implícitos}
+\section{Cuantificadores: parámetros y argumentos implícitos}
 
 \begin{designfr}
 Como se busca un lenguaje explícito, todo identificador que se utilice en una expresión, debe estar previamente definido con un tipo acompañante, tomando inspiración de otros lenguajes con tipos dependientes llegamos a la idea de tener dos secciones de la firma de una función, la parte \emph{implícita}, que es el cuantificador universal; y la parte \emph{explícita}:
@@ -250,8 +250,6 @@ compose : forall a:Type, b:Type, c:Type . (b -> c) -> (a -> b) -> a -> c
 Ahora la definición se asemeja mucho más a un cuantificador, haciendo más explícito su uso, y además podemos acceder a todas las variables declaradas y especificarlas.
 
 Se consideró usar la palabra \inlinecode{product} en vez de \inlinecode{forall}, pero se decidió ir por una referencia directa a lógica simbólica, aunque estos se consideren los tipos producto.
-
-\section{El cuantificador existencial}
 
 De igual forma, se definen los tipos existenciales con la palabra \inlinecode{exists}, aunque se consideró la palabra \inlinecode{sum}:
 
