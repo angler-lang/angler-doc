@@ -208,6 +208,12 @@ En un principio se consideró usar la convención de Haskell, que los constructo
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente. Finalmente decidimos que no habrá diferencia semántica entre identificadores que comiencen con mayúscula o minúscula.
 \end{designfr}
 
+\section{Identificadores inferidos}
+
+\begin{designfr}
+Como el lenguaje apunta a ser explícito, se evita la inferencia de tipos por completo, esto hace que no podamos tener varios identificadores iguales en un mismo alcance, ya que al usarlo no se sabe cuál usar; se podría inferir cuál identificador por el contexto en el que fue usado (e.g. \inlinecode{x:Nat} y \inlinecode{x:Bool}, en \inlinecode{not x} sólo funcionaría \inlinecode{x:Bool}), pero se opta por reportar un error.
+\end{designfr}
+
 \section{Cuantificadores: parámetros y argumentos implícitos}
 
 \begin{designfr}
