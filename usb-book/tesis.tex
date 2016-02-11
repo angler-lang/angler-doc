@@ -37,6 +37,7 @@
 
 % Para colocar teoremas en cajas
 \usepackage{mdframed}
+\usepackage{tcolorbox}
 
 % Para texto Lorem Ipsum
 \usepackage{blindtext}
@@ -81,24 +82,36 @@
 \setlist[itemize]{nosep}
 
 % Marco de color con título
-\newenvironment{coloredframe}[3][]{
-    \mdfsetup{
-        hidealllines=true,
-        leftline=true,%topline=true,
-        % frametitleaboveskip=-5pt,
-        frametitlerule=true,
-        frametitlerulewidth=.25pt,
-        linewidth=1.5pt,
-        frametitle={\colorbox{white}{\space#2\space}},
-        frametitle={#2},
-        linecolor=#3,
-        frametitlebackgroundcolor=#3!10,
-        #1
-    }
-    \begin{mdframed}
-}{
-    \end{mdframed}
+\tcbuselibrary{skins}
+\tcbuselibrary{breakable}
+\newtcolorbox{coloredframe}[3][]{
+    empty,
+    breakable=true,
+    sharp corners=all,
+    top=4mm, left=4mm,
+    borderline west={1.5pt}{0pt}{#3}, borderline north={1.5pt}{0pt}{#3},
+    attach boxed title to top left={yshift=-1.75ex,xshift=6ex},
+    coltitle=black,
+    colback=white, colbacktitle=white,
+    fonttitle=\bfseries,
+    boxed title style={boxrule=0pt,colframe=white},
+    title=#2,
+    #1
 }
+
+% \newenvironment{coloredframe}[3][]{
+%     \mdfsetup{
+%         hidealllines=true, leftline=true,
+%         frametitlerule=true, frametitlerulewidth=.25pt,
+%         frametitle=#2,
+%         frametitlebackgroundcolor=#3!10,
+%         linewidth=1.5pt, linecolor=#3,
+%         #1
+%     }
+%     \begin{mdframed}
+% }{
+%     \end{mdframed}
+% }
 
 % greens
 \definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
