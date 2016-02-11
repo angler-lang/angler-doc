@@ -5,4 +5,4 @@ all: clean
 	pdflatex tesis.tex
 
 clean:
-	rm -f *.aux *.l* *.toc *.out *.blg *.bbl tesis.pdf
+	rm -f *.aux *.l* *.toc *.out *.blg *.bbl *-blx.bib *.run.xml tesis.pdf

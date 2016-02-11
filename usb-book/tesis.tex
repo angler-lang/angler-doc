@@ -25,8 +25,9 @@
 \usepackage{verbatim}
 \usepackage{fancyvrb}
 
-% Para incluir hipervínculos
+% Para incluir referencias
 \usepackage{hyperref}
+\usepackage{nameref}
 \hypersetup{urlcolor=blue, colorlinks=false}
 
 % Para más símbolos matemáticos
@@ -69,6 +70,12 @@
 % item lists
 \renewcommand{\labelitemi}{$\bullet$}
 \renewcommand{\labelitemii}{$\textendash$}
+
+\newcommand\getcurrentref[1]{%      \getcurrentref{chapter|section|subsection}
+ \ifnumequal{\value{#1}}{0}
+  {??}
+  {\the\value{#1}}%
+}
 
 % compact itemize
 \setlist[itemize]{nosep}
@@ -308,21 +315,20 @@
 
 % El número de capítulos varía. En mi libro fueron cuatro (sin contar
 % introducción y conclusión).
-\input{./partes/capitulo1}
-% \input{./partes/capitulo2}
-% \input{./partes/capitulo3}
-\input{./partes/capitulo4}
+\input{./partes/marco-teorico}
+\input{./partes/marco-tecnologico}
+\input{./partes/marco-metodologico}
+\input{./partes/desarrollo}
+\input{./partes/resultados}
 
 \input{./partes/conclusiones}
 
 % El estilo de la bibliografía es AAAI, definido en el archivo aaai.bst.
-\def\chapterTitle{Bibliografía\xspace}
-
-\label{Bibliography}
+\label{bibliography}
 \printbibliography
-\lhead{\emph{\chapterTitle}}
+\lhead{\emph{Bibliografía}}
 \addtocontents{toc}{\vspace{2em}}
-\addcontentsline{toc}{chapter}{\chapterTitle}
+\addcontentsline{toc}{chapter}{Bibliografía}
 
 % Apéndices
 \appendix
