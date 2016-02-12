@@ -201,7 +201,7 @@ isUSD (XBT _) = True    -- este caso nunca correrá
 \section{Identificadores, ¿mayúsculas, minúsculas, ambas?}
 
 \begin{designfr}
-En un principio se consideró usar la convención de Haskell, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
+En un principio se consideró usar la convención de Haskell \cite{haskell}, que los constructores de tipos y tipos se escribieran con la primera letra mayúscula, y que los valores con la primera letra minúscula; de esta manera se podía distinguir sintácticamente entre ellos.
 
 Pero esta idea tenía algunos problemas, por ejemplo, los identificadores que comenzaran con símbolos y no letras, ¿a qué clase pertenecerían?, además debemos recordar que con tipos dependientes, los tipos son expresiones como cualquier otra, por lo que una distinción sintáctica entre el \emph{uso} de tipos y valores no era conveniente. Finalmente decidimos que no habrá diferencia semántica entre identificadores que comiencen con mayúscula o minúscula.
 \end{designfr}
@@ -650,6 +650,8 @@ Id ::=& \_ \left<identifier\right>
 \label{fig:parser-grammar}
 }
 
+Esta gramática presenta una construcción de expresión \inlinecode{case-of} del lenguaje que aún no han sido explicada en este capítulo, pero se incluye por completitud. Ésta será explicada en la sección \ref{case-of}.
+
 \end{implementationfr}
 
 \section{Operadores \emph{mixfijos} en acción}
@@ -721,8 +723,8 @@ Utilizamos \emph{Megaparsec}, una librería de \emph{combinadores de analizador 
 
 \section{Clases de tipos, tipos y constructores azucarados}
 
-\begin{designfr}
-En distintos lenguajes estudiados se utiliza \emph{clases de tipos}, una herramienta para introducir polimorfismo, esto es, poder utilizar un mismo identificador de función para diferentes tipos. Aquí se presenta un ejemplo en Haskell \cite{haskell}.
+\begin{investigationfr}
+\textcite{less-ad-hoc-polymorphism} presentan las \emph{clases de tipos}, una herramienta para manejar el poliformismo de manera más organizada, es decir, poder utilizar un mismo identificador de función para diferentes tipos. Aquí se presenta un ejemplo en Haskell.
 
 \begin{haskellcode}
 -- tiene un `forall t:Type .` implícito
@@ -752,7 +754,7 @@ En un primer momento no se consideraron necesarias para nuestro lenguaje, aunque
 closed Eq : Type -> Type with
     EqI : forall t:Type . (t -> t -> Bool) -> Eq t
 
--- los operadores que define la *clase*
+-- las funciones que define la *clase*
 equal : forall t:Type . Eq t -> t -> t -> Bool
 equal (EqI eq) = eq
 unequal : forall t:Type . Eq t -> t -> t -> Bool
@@ -774,7 +776,7 @@ elem BoolEq False (False :: True :: Nil)    -- True
 \end{anglercode}
 
 La mayor diferencia es que para utilizar estas funciones en nuestro lenguaje, se debe pasar la \emph{instancia} a utilizar explícitamente. De hecho, esta es una manera válida para plantear las clases de tipos \cite{scrap-type-classes}, como azúcar sintáctica para tipos y constructores.
-\end{designfr}
+\end{investigationfr}
 
 \section{Comportamientos, o: cómo aprendí a usar \emph{clases de tipos} y a amar el polimorfismo}
 
@@ -854,7 +856,7 @@ scope Product with
 
 Igual se podrían hacer instancias en el alcance global, pero se usa cuando se necesita una instancia especial aparte de la principal, (e.g. instancias de \inlinecode{Show} en un alcance \inlinecode{AST}, para mostrar un árbol de sintaxis abstracta), o cuando hay más de una instancia válida.
 
-Este problema no existe si usamos tipos y construcores, ya que toda \emph{instancia} debe ser nombrada.
+Este problema no existe si usamos tipos y constructores, ya que toda \emph{instancia} debe ser nombrada.
 
 \begin{anglercode}
 closed Semigroup : Type -> Type with
@@ -896,28 +898,15 @@ Quedamos dudosos acerca de la necesidad de comportamientos, tenemos varias razon
 \begin{itemize}
     \item Introducen identificadores automáticamente para su uso (e.g. \inlinecode{neutral}).
     \item Facilitan la representación de \emph{pilas de comportamientos}, es decir, la necesidad de uno para la definición de otro.
-    \item Código mucho más breve.
+    \item Permiten escribir código mucho más breve y ordenado.
     \item \#TODO.
 \end{itemize}
 
-Mientras que algunas razones en contra de incluir comportamientos son:
+También tenemos razones a favor de solamente usar tipos y constructores:
 
 \begin{itemize}
-    \item \#TODO.
-\end{itemize}
-
-También tenemos razones a favor de simplemente usar tipos y constructores:
-
-\begin{itemize}
-    \item Código explícito sobre las \emph{instancias} a utilizar.
-    \item Pueden tener múltipes parámetros.
-    \item \#TODO.
-\end{itemize}
-
-Alguns razones en contra de usar tipos y constructores para poliformismo:
-
-\begin{itemize}
-    \item Se prestan para escribir código desordenado.
+    \item Permiten expresar código explícito sobre cuál \emph{instancia} se utilizará en cada aplicación funcional.
+    \item Permiten simular comportamientos de múltipes parámetros.
     \item \#TODO.
 \end{itemize}
 
@@ -927,26 +916,27 @@ Por lo que decidimos que no deben formar parte del diseño principal del lenguaj
 \section{Lamda funciones explícitas}
 
 \begin{designfr}
-Las lambda funciones es una de las construcciones clásicas de los lenguajes de programación funcional, nos parecía obvio que debían estar en el diseño, pero suelen ser presentadas en los lenguajes estudiados sin asociación de tipos a los argumentos ni a su tipo; como buscamos un lenguaje explícito, esto iba en contra de la filosofía que presenta el lenguaje en el resto del diseño.
+Las lambda funciones son una de las construcciones clásicas de los lenguajes de programación funcional, nos parecía obvio que debían estar en el diseño, pero suelen ser presentadas en los lenguajes estudiados sin asociación de tipos a los argumentos ni a su tipo; como buscamos un lenguaje explícito, esto iba en contra de la filosofía que presenta el lenguaje en el resto del diseño.
 
 \begin{anglercode}
-\ x y = x :: y :: Nil       -- ¿de qué tipo es la función?
+\ x y => x :: y :: Nil      -- ¿de qué tipo es la función?
 \end{anglercode}
 
 Así que propusimos diversas sintaxis para usar en el lenguaje:
 
 \begin{anglercode}
--- anotación por argumento y salida
-\ (x : Nat) (y : Nat) : List Nat = x :: y :: Nil
+-- anotación de tipos por argumento y salida
+\ (x : Nat) (y : Nat) : List Nat => x :: y :: Nil
 
--- anotación de la función completa
-\ x y : Nat -> Nat -> List Nat = x :: y :: Nil
+-- anotación de tipo de la función completa
+\ x y : Nat -> Nat -> List Nat => x :: y :: Nil
 \end{anglercode}
 
-Pero ninguna nos convenció, así que decidimos que las lambdas funciones tampoco deben formar parte del diseño principal del lenguaje, pero que en caso de incluirlas en un implementación, se debe usar la sintaxis de \emph{anotación de la función completa}.
+Pero ninguna nos convenció, así que decidimos que las lambdas funciones tampoco deben formar parte del diseño principal del lenguaje, pero que en caso de incluirlas en un implementación, se debe usar la sintaxis de \emph{anotación de tipo de la función completa}.
 \end{designfr}
 
 \section{Deconstrucción de expresiones con pattern matching y análisis por caso}
+\label{case-of}
 
 \begin{designfr}
 Ya habiendo avanzado bastante en la implementación nos dimos cuenta de que no había cómo deconstruir una expresión para evaluar sus casos, se nos ocurrió colocar los pattern matching en un \inlinecode{where}, pero se veían muy parecidos a una definición de función, necesitamos una sintaxis que muestre la diferencia de semántica. De manera que surgieron las siguientes tres opciones:
