@@ -3,7 +3,7 @@
 Este archivo almacenará ideas que se nos ocurran y capaz valga la pena implementar en un futuro.
 
 ## Diseño
-- case .. of ..
+- Agregar la sitaxis `id0, id1, id2 : Tipo` que introduce múltiples identificadores con el mismo tipo a otras partes del parser
 - Typed holes
 - Prueba de totalidad
 
@@ -18,7 +18,4 @@ Este archivo almacenará ideas que se nos ocurran y capaz valga la pena implemen
     + (capaz lo mismo para `exists`)
 - Para funciones mutualmente recursivas: [idris tutorial](http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html#note-declaration-order-and-mutual-blocks)
 - Las instancias de comportamientos pueden generar funciones `__<type>__<behaviour>__<scope>`, ya que dos `_` seguidos están prohíbidos para identificadores.
-
-## A discutir
-
-- ¿Deberíamos realmente tener alcances cerrados y abiertos?
+- Cambiar los literales en el parser de usar `'id'` a usar `"id"`
